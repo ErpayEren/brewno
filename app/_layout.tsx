@@ -64,6 +64,7 @@ export default function RootLayout() {
             <Stack.Screen name="coffee/[id]" />
             <Stack.Screen name="brew/[method]" />
             <Stack.Screen name="onboarding" />
+            <Stack.Screen name="taste-quiz" />
           </Stack>
           {/* Global Toast Overlay */}
           <ToastContainer />

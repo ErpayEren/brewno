@@ -8,6 +8,7 @@ interface AuthState {
   profile: any | null;
   loading: boolean;
   initialized: boolean;
+  hasTasteProfile: boolean;
 
   // Actions
   initialize: () => Promise<void>;
@@ -16,6 +17,7 @@ interface AuthState {
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   updateProfile: (data: { full_name?: string; bio?: string; location?: string; avatar_url?: string }) => Promise<{ error: string | null }>;
+  setHasTasteProfile: (value: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -24,17 +26,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   profile: null,
   loading: false,
   initialized: false,
+  hasTasteProfile: false,
+
+  setHasTasteProfile: (value: boolean) => set({ hasTasteProfile: value }),
 
   initialize: async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        const { data: profile } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-        set({ user: session.user, session, profile, initialized: true });
+        const [{ data: profile }, { data: tp }] = await Promise.all([
+          supabase.from('users').select('*').eq('id', session.user.id).single(),
+          supabase.from('taste_profiles').select('user_id').eq('user_id', session.user.id).maybeSingle(),
+        ]);
+        set({ user: session.user, session, profile, hasTasteProfile: !!tp, initialized: true });
       } else {
         set({ initialized: true });
       }
@@ -45,14 +49,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     // Listen for auth changes
     supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
-        const { data: profile } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-        set({ user: session.user, session, profile });
+        const [{ data: profile }, { data: tp }] = await Promise.all([
+          supabase.from('users').select('*').eq('id', session.user.id).single(),
+          supabase.from('taste_profiles').select('user_id').eq('user_id', session.user.id).maybeSingle(),
+        ]);
+        set({ user: session.user, session, profile, hasTasteProfile: !!tp });
       } else {
-        set({ user: null, session: null, profile: null });
+        set({ user: null, session: null, profile: null, hasTasteProfile: false });
       }
     });
   },
@@ -60,7 +63,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signInWithEmail: async (email, password) => {
     set({ loading: true });
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) return { error: error.message };
       return { error: null };
     } catch (e: any) {
