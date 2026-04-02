@@ -11,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { useFeed, useLike } from '../../hooks/useData';
+import { useRecommendations, useTrending } from '../../hooks/useRecommendations';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
 import { haptics } from '../../hooks/useHaptics';
@@ -321,8 +322,8 @@ const cs = StyleSheet.create({
 
 // ─── Header Component ─────────────────────────────────────────────────────────
 function FeedHeader({
-  active, onFilter, profile,
-}: { active: string; onFilter: (f: string) => void; profile: any }) {
+  active, onFilter, profile, recommendations, trending,
+}: { active: string; onFilter: (f: string) => void; profile: any; recommendations?: any[]; trending?: any[] }) {
   const FILTERS = ['All', 'Following', 'Nearby'];
 
   return (
@@ -389,6 +390,76 @@ function FeedHeader({
         </View>
       </Animated.View>
 
+      {/* For You row */}
+      {recommendations && recommendations.length > 0 && (
+        <Animated.View entering={FadeInDown.delay(140).duration(400)} style={{ marginBottom: Spacing.xl }}>
+          <View style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: Spacing.md }}>
+            <Text style={{ fontFamily: 'CormorantGaramond-LightItalic', fontSize: 20, color: Colors.cream, lineHeight: 24 }}>For You</Text>
+            <Text style={{ fontFamily: 'SyneMono-Regular', fontSize: 8, color: Colors.copper, letterSpacing: 1 }}>PERSONALIZED</Text>
+          </View>
+          <FlatList
+            horizontal showsHorizontalScrollIndicator={false}
+            data={recommendations}
+            keyExtractor={(i: any) => i.id}
+            contentContainerStyle={{ gap: Spacing.sm }}
+            renderItem={({ item, index }: any) => {
+              const g = HERO_GRADIENTS[index % HERO_GRADIENTS.length];
+              return (
+                <TouchableOpacity
+                  onPress={() => router.push(`/coffee/${item.id}` as any)}
+                  style={[rw.card, { backgroundColor: g.from }]}
+                  accessibilityRole="button"
+                >
+                  <View style={[StyleSheet.absoluteFillObject, { backgroundColor: g.mid, opacity: 0.6 }]} />
+                  <View style={rw.matchBadge}>
+                    <Text style={rw.matchText}>{item.match_score}%</Text>
+                  </View>
+                  <View style={rw.bottom}>
+                    <Text style={rw.origin} numberOfLines={1}>{item.origin_country?.toUpperCase()}</Text>
+                    <Text style={rw.name} numberOfLines={2}>{item.name}</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            }}
+          />
+        </Animated.View>
+      )}
+
+      {/* Trending row */}
+      {trending && trending.length > 0 && (
+        <Animated.View entering={FadeInDown.delay(180).duration(400)} style={{ marginBottom: Spacing.xl }}>
+          <View style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: Spacing.md }}>
+            <Text style={{ fontFamily: 'CormorantGaramond-LightItalic', fontSize: 20, color: Colors.cream, lineHeight: 24 }}>Trending</Text>
+            <Text style={{ fontFamily: 'SyneMono-Regular', fontSize: 8, color: Colors.fog, letterSpacing: 1 }}>THIS WEEK</Text>
+          </View>
+          <FlatList
+            horizontal showsHorizontalScrollIndicator={false}
+            data={trending}
+            keyExtractor={(i: any) => i.id}
+            contentContainerStyle={{ gap: Spacing.sm }}
+            renderItem={({ item, index }: any) => {
+              const g = HERO_GRADIENTS[(index + 2) % HERO_GRADIENTS.length];
+              return (
+                <TouchableOpacity
+                  onPress={() => router.push(`/coffee/${item.id}` as any)}
+                  style={[rw.card, { backgroundColor: g.from }]}
+                  accessibilityRole="button"
+                >
+                  <View style={[StyleSheet.absoluteFillObject, { backgroundColor: g.mid, opacity: 0.6 }]} />
+                  <View style={rw.trendBadge}>
+                    <Text style={rw.trendText}>{item.checkin_count} pours</Text>
+                  </View>
+                  <View style={rw.bottom}>
+                    <Text style={rw.origin} numberOfLines={1}>{item.origin_country?.toUpperCase()}</Text>
+                    <Text style={rw.name} numberOfLines={2}>{item.name}</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            }}
+          />
+        </Animated.View>
+      )}
+
       {/* Section label */}
       <Text style={hs.section}>
         {active === 'Following' ? "FRIENDS' PICKS" : active === 'Nearby' ? 'NEAR YOU' : 'LATEST POURS'}
@@ -397,6 +468,16 @@ function FeedHeader({
   );
 }
 
+const rw = StyleSheet.create({
+  card: { width: 130, height: 160, borderRadius: Radius.xl, overflow: 'hidden', borderWidth: 1, borderColor: Colors.hairline },
+  matchBadge: { position: 'absolute', top: 10, right: 10, backgroundColor: Colors.copper, borderRadius: Radius.full, paddingHorizontal: 7, paddingVertical: 3 },
+  matchText: { fontFamily: 'SyneMono-Regular', fontSize: 9, color: Colors.ink, fontWeight: '700' as any },
+  trendBadge: { position: 'absolute', top: 10, right: 10, backgroundColor: 'rgba(8,6,4,0.72)', borderRadius: Radius.full, paddingHorizontal: 7, paddingVertical: 3, borderWidth: 1, borderColor: Colors.hairline },
+  trendText: { fontFamily: 'SyneMono-Regular', fontSize: 8, color: Colors.fog, letterSpacing: 0.5 },
+  bottom: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: Spacing.sm },
+  origin: { fontFamily: 'SyneMono-Regular', fontSize: 7, color: Colors.copper, letterSpacing: 1.5, marginBottom: 3 },
+  name: { fontFamily: 'CormorantGaramond-Italic', fontSize: 14, color: Colors.cream, lineHeight: 17 },
+});
 const hs = StyleSheet.create({
   wrap: {
     paddingHorizontal: Spacing.lg,
@@ -458,6 +539,8 @@ export default function FeedScreen() {
   const [filter, setFilter] = useState('All');
   const { user, profile } = useAuthStore();
   const { data, isLoading, isError, error, refetch, isFetching } = useFeed(filter);
+  const { data: recommendations } = useRecommendations(6);
+  const { data: trending } = useTrending(6);
 
   const renderCard = useCallback(({ item, index }: { item: any; index: number }) => (
     <FeedCard item={item} index={index} userId={user?.id} />
@@ -471,7 +554,7 @@ export default function FeedScreen() {
         renderItem={renderCard}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={
-          <FeedHeader active={filter} onFilter={setFilter} profile={profile} />
+          <FeedHeader active={filter} onFilter={setFilter} profile={profile} recommendations={recommendations} trending={trending} />
         }
         ListEmptyComponent={
           isLoading

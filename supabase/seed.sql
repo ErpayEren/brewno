@@ -144,3 +144,50 @@ INSERT INTO cafes (name, slug, address, city, country, lat, lng, is_specialty) V
   ('Brew Society Izmir',    'brew-society-izmir',      'Kordon Cd., Karsiyaka',          'Izmir',    'Turkey', 38.4720, 27.1110, true),
   ('Norm Coffee Nisantasi', 'norm-nisantasi',          'Akkavak Sk., Nisantasi',         'Istanbul', 'Turkey', 41.0490, 28.9960, true)
 ON CONFLICT (slug) DO NOTHING;
+
+-- ─── BREW GUIDES ──────────────────────────────────────────
+INSERT INTO brew_guides (method, title, description, ratio, temp_c, grind_size, steps) VALUES
+('V60', 'Hario V60 Pour Over', 'Clean, bright, and nuanced. The gold standard for filter coffee.', '1:15', 93, 'Medium-fine', '[
+  {"step":1,"instruction":"Rinse the paper filter with hot water. Discard rinse water.","duration_sec":30},
+  {"step":2,"instruction":"Add 15g of medium-fine ground coffee. Tare your scale.","duration_sec":20},
+  {"step":3,"instruction":"Bloom: pour 30ml of water in a circular motion. Wait 30 seconds.","duration_sec":30},
+  {"step":4,"instruction":"Pour to 150ml total in slow circles. Keep the bed flat.","duration_sec":45},
+  {"step":5,"instruction":"Pour to 225ml total. Maintain a steady pour rate.","duration_sec":45},
+  {"step":6,"instruction":"Final pour to 225ml. Total brew time: 2:30–3:00 min.","duration_sec":30}
+]'),
+('Espresso', 'Classic Espresso', 'Concentrated, intense, the foundation of all espresso drinks.', '1:2', 93, 'Fine', '[
+  {"step":1,"instruction":"Purge your group head for 2 seconds.","duration_sec":5},
+  {"step":2,"instruction":"Dose 18g of finely ground coffee into the portafilter.","duration_sec":15},
+  {"step":3,"instruction":"Distribute evenly and tamp with 15–20kg of pressure. Level the puck.","duration_sec":15},
+  {"step":4,"instruction":"Lock in and start extraction immediately.","duration_sec":5},
+  {"step":5,"instruction":"Target 36g yield in 25–30 seconds. Adjust grind if needed.","duration_sec":30}
+]'),
+('Chemex', 'Chemex Brewer', 'Full-bodied yet clean. The most elegant brew method.', '1:15', 94, 'Medium-coarse', '[
+  {"step":1,"instruction":"Fold the Chemex filter (3 layers on the spout side). Rinse thoroughly.","duration_sec":30},
+  {"step":2,"instruction":"Add 30g of medium-coarse ground coffee.","duration_sec":15},
+  {"step":3,"instruction":"Bloom with 60ml. Wait 45 seconds — Chemex needs a longer bloom.","duration_sec":45},
+  {"step":4,"instruction":"Pour in 100ml increments, keeping water level consistent.","duration_sec":60},
+  {"step":5,"instruction":"Continue pouring to 450ml total. Total brew time: 4:00–4:30 min.","duration_sec":90}
+]'),
+('AeroPress', 'AeroPress Standard', 'Forgiving, fast, and surprisingly complex. Great for travel.', '1:12', 85, 'Medium', '[
+  {"step":1,"instruction":"Insert plunger 1cm into chamber. Stand upside down (inverted method).","duration_sec":10},
+  {"step":2,"instruction":"Add 15g of medium ground coffee.","duration_sec":10},
+  {"step":3,"instruction":"Pour 180ml of 85°C water. Stir 10 times.","duration_sec":20},
+  {"step":4,"instruction":"Steep for 1 minute.","duration_sec":60},
+  {"step":5,"instruction":"Attach rinsed filter cap. Flip onto cup. Press slowly over 30 seconds.","duration_sec":30}
+]'),
+('French Press', 'French Press', 'Rich, full-bodied, and immersive. The most forgiving method.', '1:15', 95, 'Coarse', '[
+  {"step":1,"instruction":"Preheat the French Press with hot water. Discard.","duration_sec":20},
+  {"step":2,"instruction":"Add 30g of coarsely ground coffee.","duration_sec":10},
+  {"step":3,"instruction":"Pour 450ml of just-off-boil water. Stir gently.","duration_sec":20},
+  {"step":4,"instruction":"Place lid on (plunger up). Steep for 4 minutes.","duration_sec":240},
+  {"step":5,"instruction":"Press plunger slowly and steadily. Pour immediately.","duration_sec":20}
+]'),
+('Cold Brew', 'Cold Brew Concentrate', 'Smooth, low-acid, naturally sweet. 12–24 hour patience required.', '1:8', 4, 'Extra-coarse', '[
+  {"step":1,"instruction":"Coarsely grind 100g of coffee.","duration_sec":30},
+  {"step":2,"instruction":"Combine with 800ml of cold filtered water in a jar. Stir well.","duration_sec":30},
+  {"step":3,"instruction":"Cover and refrigerate for 12–24 hours.","duration_sec":0},
+  {"step":4,"instruction":"Strain through a fine mesh or paper filter.","duration_sec":300},
+  {"step":5,"instruction":"Dilute 1:1 with water or milk to serve. Keeps 2 weeks refrigerated.","duration_sec":10}
+]')
+ON CONFLICT (method) DO NOTHING;
