@@ -589,64 +589,50 @@ ON CONFLICT (slug) DO NOTHING;
 -- ─── COMPUTE COFFEE EMBEDDING ─────────────────────────────
 -- Builds an 8-dimensional flavor vector for a coffee from
 -- community tasting notes in the last 90 days.
+-- Uses the flavors ontology table for note → dimension mapping,
+-- so new flavors added to the table are picked up automatically.
 -- Call: SELECT compute_coffee_embedding('<coffee_uuid>');
 CREATE OR REPLACE FUNCTION compute_coffee_embedding(p_coffee_id UUID)
 RETURNS void LANGUAGE plpgsql SECURITY DEFINER AS $$
 DECLARE
-  v_floral    FLOAT := 0;
-  v_fruity    FLOAT := 0;
-  v_sweet     FLOAT := 0;
-  v_nutty     FLOAT := 0;
-  v_spice     FLOAT := 0;
-  v_roasted   FLOAT := 0;
-  v_fermented FLOAT := 0;
-  v_earthy    FLOAT := 0;
-  v_total     FLOAT;
-  note        TEXT;
-  all_notes   TEXT[];
+  dim_counts RECORD;
+  v_total    FLOAT;
 BEGIN
-  SELECT array_agg(unnested) INTO all_notes
-  FROM checkins, unnest(tasting_notes) AS unnested
-  WHERE coffee_id = p_coffee_id
-    AND created_at > NOW() - INTERVAL '90 days';
+  -- Join tasting notes against flavors ontology to count per dimension
+  SELECT
+    COALESCE(SUM(CASE WHEN f.dimension = 'floral'    THEN 1 ELSE 0 END), 0)::FLOAT AS v_floral,
+    COALESCE(SUM(CASE WHEN f.dimension = 'fruity'    THEN 1 ELSE 0 END), 0)::FLOAT AS v_fruity,
+    COALESCE(SUM(CASE WHEN f.dimension = 'sweet'     THEN 1 ELSE 0 END), 0)::FLOAT AS v_sweet,
+    COALESCE(SUM(CASE WHEN f.dimension = 'nutty'     THEN 1 ELSE 0 END), 0)::FLOAT AS v_nutty,
+    COALESCE(SUM(CASE WHEN f.dimension = 'spice'     THEN 1 ELSE 0 END), 0)::FLOAT AS v_spice,
+    COALESCE(SUM(CASE WHEN f.dimension = 'roasted'   THEN 1 ELSE 0 END), 0)::FLOAT AS v_roasted,
+    COALESCE(SUM(CASE WHEN f.dimension = 'fermented' THEN 1 ELSE 0 END), 0)::FLOAT AS v_fermented,
+    COALESCE(SUM(CASE WHEN f.dimension = 'earthy'    THEN 1 ELSE 0 END), 0)::FLOAT AS v_earthy
+  INTO dim_counts
+  FROM checkins ch, unnest(ch.tasting_notes) AS note(val)
+  JOIN flavors f ON LOWER(note.val) = LOWER(f.name)
+  WHERE ch.coffee_id = p_coffee_id
+    AND ch.created_at > NOW() - INTERVAL '90 days'
+    AND f.dimension IS NOT NULL;
 
-  FOREACH note IN ARRAY COALESCE(all_notes, ARRAY[]::TEXT[]) LOOP
-    CASE LOWER(note)
-      WHEN 'jasmine','rose','chamomile','lavender','orange blossom','floral'
-        THEN v_floral    := v_floral    + 1;
-      WHEN 'blueberry','peach','citrus','tropical','strawberry','stone fruit',
-           'lemon','lime','fruity','cherry','mango','pineapple','apricot','fig'
-        THEN v_fruity    := v_fruity    + 1;
-      WHEN 'caramel','honey','vanilla','brown sugar','nougat','molasses',
-           'toffee','maple syrup','praline','sweet'
-        THEN v_sweet     := v_sweet     + 1;
-      WHEN 'hazelnut','almond','cocoa','dark choc','peanut','walnut',
-           'milk choc','marzipan','nutty'
-        THEN v_nutty     := v_nutty     + 1;
-      WHEN 'bergamot','cinnamon','clove','pepper','anise','cardamom',
-           'ginger','nutmeg','spice'
-        THEN v_spice     := v_spice     + 1;
-      WHEN 'tobacco','cedar','smoky','burnt','charred','ash','leather',
-           'rubber','roasted'
-        THEN v_roasted   := v_roasted   + 1;
-      WHEN 'winey','whiskey','funky','sour','kombucha','vinegar','beer',
-           'brandy','fermented'
-        THEN v_fermented := v_fermented + 1;
-      WHEN 'mushroom','wet soil','mossy','herbal','hay','woody','cereal',
-           'grass','earthy'
-        THEN v_earthy    := v_earthy    + 1;
-      ELSE NULL;
-    END CASE;
-  END LOOP;
-
-  v_total := SQRT(v_floral^2 + v_fruity^2 + v_sweet^2 + v_nutty^2 +
-                  v_spice^2  + v_roasted^2 + v_fermented^2 + v_earthy^2);
+  v_total := SQRT(
+    dim_counts.v_floral^2    + dim_counts.v_fruity^2    +
+    dim_counts.v_sweet^2     + dim_counts.v_nutty^2     +
+    dim_counts.v_spice^2     + dim_counts.v_roasted^2   +
+    dim_counts.v_fermented^2 + dim_counts.v_earthy^2
+  );
 
   IF v_total > 0 THEN
     UPDATE coffees
     SET flavor_embedding = ARRAY[
-      v_floral/v_total, v_fruity/v_total, v_sweet/v_total, v_nutty/v_total,
-      v_spice/v_total,  v_roasted/v_total, v_fermented/v_total, v_earthy/v_total
+      dim_counts.v_floral    / v_total,
+      dim_counts.v_fruity    / v_total,
+      dim_counts.v_sweet     / v_total,
+      dim_counts.v_nutty     / v_total,
+      dim_counts.v_spice     / v_total,
+      dim_counts.v_roasted   / v_total,
+      dim_counts.v_fermented / v_total,
+      dim_counts.v_earthy    / v_total
     ]::vector(8)
     WHERE id = p_coffee_id;
   END IF;

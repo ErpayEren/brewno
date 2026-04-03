@@ -407,7 +407,7 @@ function FeedHeader({
               return (
                 <TouchableOpacity
                   onPress={() => {
-                    if (userId) logRecommendationClick(userId, item.id).catch(() => {});
+                    if (userId) logRecommendationClick(userId, item.id).catch(() => { /* non-blocking */ });
                     router.push(`/coffee/${item.id}` as any);
                   }}
                   style={[rw.card, { backgroundColor: g.from }]}

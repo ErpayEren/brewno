@@ -325,26 +325,28 @@ type ArchetypeKey = typeof ARCHETYPES[number]['key'];
 
 const ROAST_PREFS = [
   { key: 'light',  label: 'Light Roast',  emoji: '🌤️', accent: Colors.amber,
-    boost: { floral: 0.2, fruity: 0.2, sweet: 0.1, roasted: -0.1 } },
+    boost: { floral: 0.2, fruity: 0.2, sweet: 0.1, roasted: -0.1 } as Partial<Record<FlavorKey, number>> },
   { key: 'medium', label: 'Medium',        emoji: '⛅',  accent: Colors.copper,
-    boost: { sweet: 0.1 } },
+    boost: { sweet: 0.1 } as Partial<Record<FlavorKey, number>> },
   { key: 'dark',   label: 'Dark Roast',   emoji: '🌑', accent: '#906840',
-    boost: { roasted: 0.2, earthy: 0.1, floral: -0.1, fruity: -0.1 } },
+    boost: { roasted: 0.2, earthy: 0.1, floral: -0.1, fruity: -0.1 } as Partial<Record<FlavorKey, number>> },
 ] as const;
 
 type RoastPrefKey = typeof ROAST_PREFS[number]['key'];
+
+type FlavorDimensions = Record<FlavorKey, number>;
 
 /** Blend archetype profile with roast preference boost and then mix into scores */
 function buildPhase1Profile(
   archetype: ArchetypeKey,
   roast: RoastPrefKey,
 ): Scores {
-  const base = { ...ARCHETYPES.find(a => a.key === archetype)!.profile };
-  const boost = ROAST_PREFS.find(r => r.key === roast)!.boost as Record<string, number>;
+  const base: FlavorDimensions = { ...ARCHETYPES.find(a => a.key === archetype)!.profile };
+  const boost: Partial<FlavorDimensions> = ROAST_PREFS.find(r => r.key === roast)!.boost;
   const dims: FlavorKey[] = ['floral','fruity','sweet','nutty','spice','roasted','fermented','earthy'];
   const result: Partial<Scores> = {};
   for (const dim of dims) {
-    result[dim] = Math.max(0, Math.min(1, (base as any)[dim] + (boost[dim] ?? 0))) as LevelValue;
+    result[dim] = Math.max(0, Math.min(1, base[dim] + (boost[dim] ?? 0))) as LevelValue;
   }
   return result as Scores;
 }
