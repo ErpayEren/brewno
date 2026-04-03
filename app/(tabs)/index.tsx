@@ -113,7 +113,6 @@ const rb = StyleSheet.create({
     borderRadius: Radius.lg, paddingHorizontal: 12, paddingVertical: 8,
     alignItems: 'center', gap: 4,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
-    backdropFilter: 'blur(12px)',
     ...SHADOWS.darkSm,
   },
   num: { fontFamily: 'CormorantGaramond-SemiBold', fontSize: 22, color: Colors.gold, lineHeight: 26 },
@@ -529,7 +528,7 @@ const hs = StyleSheet.create({
   },
   chipActive: { borderColor: Colors.copper, backgroundColor: Colors.roast },
   chipGlow: {
-    position: 'absolute', inset: 0,
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
     backgroundColor: Colors.copperGlowSoft,
   },
   chipText: { fontFamily: 'SyneMono-Regular', fontSize: 9, color: Colors.fog, letterSpacing: 1 },

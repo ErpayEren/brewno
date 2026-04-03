@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Tabs } from 'expo-router';
 import {
-  View, Text, StyleSheet, TouchableOpacity, Platform, Dimensions, BlurView,
+  View, Text, StyleSheet, TouchableOpacity, Platform, Dimensions,
 } from 'react-native';
 import Animated, {
   useSharedValue, useAnimatedStyle, withSpring, withTiming, withSequence,
