@@ -197,6 +197,8 @@ export default function ProfileScreen() {
     ? (checkins.reduce((a: number, c: any) => a + (c.rating ?? 0), 0) / checkins.length).toFixed(1)
     : '—';
   const dnaBars = buildDna(checkins);
+  const progressToNextBadge = Math.min(100, Math.round((checkins.length / 10) * 100));
+  const trustLevel = checkins.length >= 30 ? 'Expert' : checkins.length >= 12 ? 'Advanced' : checkins.length >= 5 ? 'Curious' : 'Newcomer';
 
 
   return (
@@ -242,6 +244,20 @@ export default function ProfileScreen() {
         </View>
       </View>
 
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>PROGRESSION</Text>
+        <View style={styles.progressCard}>
+          <View style={styles.progressHead}>
+            <Text style={styles.progressTitle}>Trust signal</Text>
+            <Text style={styles.progressLevel}>{trustLevel}</Text>
+          </View>
+          <View style={styles.progressTrack}>
+            <View style={[styles.progressFill, { width: `${progressToNextBadge}%` }]} />
+          </View>
+          <Text style={styles.progressMeta}>Next badge progress · {progressToNextBadge}%</Text>
+        </View>
+      </View>
+
       {/* Tabs */}
       <View style={{ paddingHorizontal: Spacing.lg }}>
         <ProfileTabs active={activeTab} onPress={setActiveTab} />
@@ -284,4 +300,11 @@ const styles = StyleSheet.create({
   section: { paddingHorizontal: Spacing.lg, marginBottom: Spacing.xl },
   sectionLabel: { fontFamily: 'SyneMono-Regular', fontSize: 9, color: Colors.fog, letterSpacing: 3, marginBottom: Spacing.md },
   dnaCard: { backgroundColor: Colors.inkSoft, borderRadius: Radius.lg, padding: Spacing.base },
+  progressCard: { backgroundColor: Colors.inkSoft, borderRadius: Radius.lg, padding: Spacing.base, borderWidth: 1, borderColor: Colors.hairline },
+  progressHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.sm },
+  progressTitle: { fontFamily: 'Syne-Regular', fontSize: 13, color: Colors.cream, fontWeight: '700' as any },
+  progressLevel: { fontFamily: 'SyneMono-Regular', fontSize: 9, color: Colors.copper, letterSpacing: 1.2 },
+  progressTrack: { height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.08)', overflow: 'hidden', marginBottom: Spacing.sm },
+  progressFill: { height: 6, borderRadius: 3, backgroundColor: Colors.copper },
+  progressMeta: { fontFamily: 'SyneMono-Regular', fontSize: 8, color: Colors.fog, letterSpacing: 0.7 },
 });

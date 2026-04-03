@@ -21,6 +21,7 @@ import {
   Colors, Typography, Spacing, Radius, SPRING, SPRING_SNAPPY,
   HERO_GRADIENTS, SHADOWS,
 } from '../../constants/tokens';
+import { PRODUCT_MANIFEST, PERFORMANCE_BUDGETS } from '../../constants/experience';
 
 const { width: W, height: H } = Dimensions.get('window');
 const CARD_HERO_HEIGHT = Math.min(340, H * 0.38);
@@ -381,8 +382,8 @@ function FeedHeader({
       <Animated.View entering={FadeInDown.delay(100).duration(500)} style={hs.statsRow}>
         {[
           { n: profile?.checkins?.length ?? '—', l: 'CHECK·INS' },
-          { n: '—', l: 'ORIGINS' },
-          { n: '—', l: 'AVG SCORE' },
+          { n: recommendations?.length ?? '—', l: 'MATCHES' },
+          { n: trending?.length ?? '—', l: 'TRENDING' },
         ].map((s, i) => (
           <React.Fragment key={s.l}>
             {i > 0 && <View style={hs.statDiv} />}
@@ -459,6 +460,18 @@ function FeedHeader({
         </Animated.View>
       )}
 
+      {/* Quick actions */}
+      <Animated.View entering={FadeInDown.delay(150).duration(400)} style={hs.quickRow}>
+        <TouchableOpacity onPress={() => router.push('/(tabs)/check-in' as any)} style={hs.quickBtn} accessibilityRole="button" accessibilityLabel="Quick action start check-in">
+          <Text style={hs.quickTitle}>Quick Check-in</Text>
+          <Text style={hs.quickSub}>Capture cup in seconds</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push('/(tabs)/discover' as any)} style={hs.quickBtn} accessibilityRole="button" accessibilityLabel="Quick action discover coffees">
+          <Text style={hs.quickTitle}>Discover</Text>
+          <Text style={hs.quickSub}>Find your next favorite</Text>
+        </TouchableOpacity>
+      </Animated.View>
+
       {/* Trending row */}
       {trending && trending.length > 0 && (
         <Animated.View entering={FadeInDown.delay(180).duration(400)} style={{ marginBottom: Spacing.xl }}>
@@ -497,6 +510,9 @@ function FeedHeader({
       {/* Section label */}
       <Text style={hs.section}>
         {active === 'Following' ? "FRIENDS' PICKS" : active === 'Nearby' ? 'NEAR YOU' : 'LATEST POURS'}
+      </Text>
+      <Text style={hs.metaCopy}>
+        {PRODUCT_MANIFEST.vision} · FMP ≤ {PERFORMANCE_BUDGETS.firstMeaningfulPaintMs}ms
       </Text>
     </View>
   );
@@ -568,6 +584,19 @@ const hs = StyleSheet.create({
     fontFamily: 'SyneMono-Regular', fontSize: 9, color: Colors.mist,
     letterSpacing: 3, marginBottom: Spacing.md,
   },
+  quickRow: { flexDirection: 'row', gap: Spacing.sm, marginBottom: Spacing.lg },
+  quickBtn: {
+    flex: 1,
+    backgroundColor: Colors.inkSoft,
+    borderWidth: 1,
+    borderColor: Colors.hairline,
+    borderRadius: Radius.lg,
+    padding: Spacing.md,
+    minHeight: 72,
+  },
+  quickTitle: { fontFamily: 'Syne-Regular', fontSize: 13, color: Colors.cream, fontWeight: '700' as any, marginBottom: 4 },
+  quickSub: { fontFamily: 'SyneMono-Regular', fontSize: 9, color: Colors.fog, letterSpacing: 0.6 },
+  metaCopy: { fontFamily: 'SyneMono-Regular', fontSize: 8, color: Colors.mist, letterSpacing: 1, marginBottom: Spacing.sm },
 });
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────

@@ -16,6 +16,8 @@ import { TastingWheel } from '../../components/TastingWheel';
 import { BarcodeScanner } from '../../components/BarcodeScanner';
 import { lookupBarcode } from '../../hooks/useData';
 import { Colors, Typography, Spacing, Radius, SPRING } from '../../constants/tokens';
+import { BRAND_COPY } from '../../constants/content';
+import { ANALYTICS_EVENTS, trackEvent } from '../../constants/analytics';
 
 const STEPS = ['Coffee', 'Café', 'Flavors', 'Rate'];
 const BREW_METHODS = ['Espresso', 'V60', 'Chemex', 'AeroPress', 'French Press', 'Cold Brew'];
@@ -151,6 +153,7 @@ export default function CheckInScreen() {
   const [brewMethod, setBrewMethod] = useState('');
   const [savedVisible, setSavedVisible] = useState(false);
   const [scannerVisible, setScannerVisible] = useState(false);
+  const [noteMode, setNoteMode] = useState<'short' | 'long'>('short');
 
   const { width: panelW } = useWindowDimensions();
   const { user } = useAuthStore();
@@ -165,6 +168,17 @@ export default function CheckInScreen() {
   const btnStyle = useAnimatedStyle(() => ({ transform: [{ scale: btnScale.value }] }));
 
   const goNext = () => {
+    if (step === 0 && !selectedCoffee) {
+      showToast({ type: 'info', title: 'Select a coffee first' });
+      return;
+    }
+    if (step === 1 && !selectedCafe && !brewMethod) {
+      showToast({ type: 'info', title: 'Tip', subtitle: 'Select café or brew method to continue.' });
+    }
+    if (step === 2 && flavors.length === 0) {
+      showToast({ type: 'info', title: 'Pick tasting notes', subtitle: 'At least one note is required.' });
+      return;
+    }
     panelX.value = withSpring(-(step + 1) * panelW, { mass: 0.9, stiffness: 180, damping: 20 });
     setStep(s => (s + 1) as Step);
   };
@@ -191,7 +205,7 @@ export default function CheckInScreen() {
 
   const handleBarcodeScan = async (barcode: string) => {
     setScannerVisible(false);
-    const { coffee, error } = await lookupBarcode(barcode);
+    const { coffee } = await lookupBarcode(barcode);
     if (coffee) {
       setSelectedCoffee(coffee);
       showToast({ type: 'success', title: 'Coffee found!', subtitle: coffee.name });
@@ -202,9 +216,10 @@ export default function CheckInScreen() {
   };
 
   const handleSave = async () => {
+    trackEvent(ANALYTICS_EVENTS.checkinStarted, { step });
     if (!user) { showToast({ type: 'error', title: 'Sign in required', subtitle: 'Create an account to save check-ins.' }); return; }
     if (!selectedCoffee) { showToast({ type: 'error', title: 'Select a coffee first' }); return; }
-    if (rating === 0) { showToast({ type: 'error', title: 'Add a rating', subtitle: 'Tap the stars to rate.' }); return; }
+    if (rating === 0) { showToast({ type: 'error', title: BRAND_COPY.toast.addRatingTitle, subtitle: BRAND_COPY.toast.addRatingSubtitle }); return; }
 
     btnScale.value = withSequence(withSpring(0.97, SPRING), withSpring(1.0, SPRING));
 
@@ -223,6 +238,8 @@ export default function CheckInScreen() {
       showToast({ type: 'error', title: 'Save failed', subtitle: error.message });
     } else {
       haptics.success();
+      trackEvent(ANALYTICS_EVENTS.checkinCompleted, { noteMode, flavors: flavors.length, rating });
+      showToast({ type: 'success', title: BRAND_COPY.toast.checkinSavedTitle, subtitle: BRAND_COPY.toast.checkinSavedSubtitle });
       setSavedVisible(true);
     }
   };
@@ -339,9 +356,17 @@ export default function CheckInScreen() {
               </View>
             </View>
             <Text style={styles.subLabel}>TASTING NOTE</Text>
+            <View style={styles.modeRow}>
+              <TouchableOpacity onPress={() => setNoteMode('short')} style={[styles.modeBtn, noteMode === 'short' && styles.modeBtnActive]} accessibilityRole="button">
+                <Text style={[styles.modeBtnText, noteMode === 'short' && styles.modeBtnTextActive]}>Short</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setNoteMode('long')} style={[styles.modeBtn, noteMode === 'long' && styles.modeBtnActive]} accessibilityRole="button">
+                <Text style={[styles.modeBtnText, noteMode === 'long' && styles.modeBtnTextActive]}>Long</Text>
+              </TouchableOpacity>
+            </View>
             <TextInput
               style={styles.noteInput}
-              placeholder="Jasmine, bergamot, stone fruit..."
+              placeholder={noteMode === 'short' ? 'Jasmine, bergamot, stone fruit...' : 'Describe aroma, acidity, sweetness, body, and aftertaste...'}
               placeholderTextColor={Colors.fog}
               multiline
               value={note}
@@ -408,6 +433,13 @@ export default function CheckInScreen() {
           router.replace('/(tabs)' as any);
         }}
       />
+
+      {scannerVisible && (
+        <BarcodeScanner
+          onScan={handleBarcodeScan}
+          onClose={() => setScannerVisible(false)}
+        />
+      )}
     </View>
   );
 }
@@ -448,6 +480,11 @@ const styles = StyleSheet.create({
   selectedCoffeeName: { fontFamily: 'CormorantGaramond-Italic', fontSize: 18, color: Colors.fog, marginBottom: Spacing.lg },
   ratingCard: { backgroundColor: Colors.inkSoft, borderRadius: Radius.lg, padding: Spacing.xl, marginBottom: Spacing.xl },
   ratingNum: { fontFamily: 'CormorantGaramond-SemiBold', fontSize: 48, color: Colors.gold, lineHeight: 52, marginLeft: Spacing.md },
+  modeRow: { flexDirection: 'row', gap: Spacing.sm, marginBottom: Spacing.sm },
+  modeBtn: { borderWidth: 1, borderColor: Colors.hairline, borderRadius: Radius.full, paddingHorizontal: 12, paddingVertical: 6, minHeight: 32, justifyContent: 'center' },
+  modeBtnActive: { borderColor: Colors.copper, backgroundColor: Colors.roast },
+  modeBtnText: { fontFamily: 'SyneMono-Regular', fontSize: 9, color: Colors.fog, letterSpacing: 1 },
+  modeBtnTextActive: { color: Colors.cream },
   noteInput: { backgroundColor: Colors.inkSoft, borderRadius: Radius.lg, borderWidth: 1, borderColor: Colors.hairline, padding: Spacing.base, fontFamily: 'Syne-Regular', fontSize: 15, color: Colors.cream, minHeight: 100, textAlignVertical: 'top', marginBottom: Spacing.xl },
   selectedTags: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm, marginBottom: Spacing.lg },
   selectedTag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: Radius.full, backgroundColor: Colors.roast, borderWidth: 1, borderColor: Colors.amber },

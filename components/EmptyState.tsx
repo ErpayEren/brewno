@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { Colors, Typography, Spacing, Radius } from '../constants/tokens';
+import { BRAND_COPY } from '../constants/content';
 
 interface EmptyStateProps {
   emoji: string;
@@ -39,7 +40,7 @@ export function ErrorState({ message, onRetry }: ErrorStateProps) {
       <Text style={s.subtitle}>{message ?? 'We couldn\'t load this content.'}</Text>
       {onRetry && (
         <TouchableOpacity onPress={onRetry} style={s.retryBtn} accessibilityRole="button">
-          <Text style={s.retryText}>Try again</Text>
+          <Text style={s.retryText}>{BRAND_COPY.cta.retry}</Text>
         </TouchableOpacity>
       )}
     </View>

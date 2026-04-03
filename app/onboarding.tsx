@@ -9,6 +9,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { Colors, Spacing, Radius, SPRING, SPRING_SNAPPY, SHADOWS } from '../constants/tokens';
+import { BRAND_COPY } from '../constants/content';
+import { ANALYTICS_EVENTS, trackEvent } from '../constants/analytics';
 
 const { width: W, height: H } = Dimensions.get('window');
 
@@ -146,12 +148,14 @@ export default function OnboardingScreen() {
   const btnStyle = useAnimatedStyle(() => ({ transform: [{ scale: btnScale.value }] }));
 
   const goNext = () => {
+    if (current === 0) trackEvent(ANALYTICS_EVENTS.onboardingStarted);
     btnScale.value = withSequence(withSpring(0.93, SPRING_SNAPPY), withSpring(1.0, SPRING));
     if (current < SLIDES.length - 1) {
       const next = current + 1;
       scrollRef.current?.scrollTo({ x: next * W, animated: true });
       setCurrent(next);
     } else {
+      trackEvent(ANALYTICS_EVENTS.onboardingCompleted);
       router.replace('/(auth)/login');
     }
   };
@@ -204,11 +208,14 @@ export default function OnboardingScreen() {
         {/* Skip */}
         {current < SLIDES.length - 1 && (
           <TouchableOpacity
-            onPress={() => router.replace('/(auth)/login')}
+            onPress={() => {
+              trackEvent(ANALYTICS_EVENTS.onboardingCompleted, { skipped: true });
+              router.replace('/(auth)/login');
+            }}
             style={styles.skipBtn}
             accessibilityRole="button"
           >
-            <Text style={styles.skipText}>SKIP</Text>
+            <Text style={styles.skipText}>{BRAND_COPY.onboarding.skip.toUpperCase()}</Text>
           </TouchableOpacity>
         )}
 
@@ -227,7 +234,7 @@ export default function OnboardingScreen() {
           </TouchableOpacity>
         </Animated.View>
 
-        <Text style={styles.sig}>brewno — your coffee memory</Text>
+        <Text style={styles.sig}>{BRAND_COPY.onboarding.signature}</Text>
       </View>
     </View>
   );

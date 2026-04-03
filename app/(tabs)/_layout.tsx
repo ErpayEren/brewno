@@ -8,6 +8,7 @@ import Animated, {
   interpolate, Extrapolation,
 } from 'react-native-reanimated';
 import { Colors, Spacing, Radius, SPRING, SPRING_SNAPPY, SHADOWS } from '../../constants/tokens';
+import { TAB_PRIMARY_JOBS } from '../../constants/experience';
 
 const { width: W } = Dimensions.get('window');
 
@@ -234,15 +235,45 @@ const bar = StyleSheet.create({
 // ─── Main Layout ──────────────────────────────────────────────────────────────
 export default function TabLayout() {
   return (
-    <Tabs
-      tabBar={(props) => <CustomTabBar {...props} />}
-      screenOptions={{ headerShown: false }}
-    >
-      <Tabs.Screen name="index" />
-      <Tabs.Screen name="discover" />
-      <Tabs.Screen name="check-in" />
-      <Tabs.Screen name="map" />
-      <Tabs.Screen name="profile" />
+      <Tabs
+        tabBar={(props) => <CustomTabBar {...props} />}
+        screenOptions={{ headerShown: false }}
+      >
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Home',
+          tabBarAccessibilityLabel: `Home. ${TAB_PRIMARY_JOBS.home}`,
+        }}
+      />
+      <Tabs.Screen
+        name="discover"
+        options={{
+          title: 'Discover',
+          tabBarAccessibilityLabel: `Discover. ${TAB_PRIMARY_JOBS.discover}`,
+        }}
+      />
+      <Tabs.Screen
+        name="check-in"
+        options={{
+          title: 'Check-in',
+          tabBarAccessibilityLabel: `Check-in. ${TAB_PRIMARY_JOBS.checkin}`,
+        }}
+      />
+      <Tabs.Screen
+        name="map"
+        options={{
+          title: 'Map',
+          tabBarAccessibilityLabel: `Map. ${TAB_PRIMARY_JOBS.map}`,
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarAccessibilityLabel: `Profile. ${TAB_PRIMARY_JOBS.profile}`,
+        }}
+      />
     </Tabs>
   );
 }

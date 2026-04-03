@@ -1,50 +1,77 @@
-# Welcome to your Expo app 👋
+# brewno
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Premium coffee memory product built with Expo + Supabase.
 
-## Get started
+## Product Manifest
 
-1. Install dependencies
+**Vision:** coffee memory + discovery + social ritual
 
-   ```bash
-   npm install
-   ```
+### Emotional tone
+- Confident
+- Warm
+- Precise
+- Sensory
 
-2. Start the app
+### Three value pillars
+1. Remember every cup with context and continuity.
+2. Discover coffees faster with transparent recommendation logic.
+3. Build social ritual through trusted community signals.
 
-   ```bash
-   npx expo start
-   ```
+### Success metrics
+- Onboarding completion
+- Check-in completion
+- Recommendation click-through rate
+- D7 / D30 retention
+- Crash-free sessions
 
-In the output, you'll find options to open the app in a
+## Information Architecture (Tab primary jobs)
+- **Home:** Personal command center for recommendations, activity, and quick actions.
+- **Discover:** Search/filter/sort engine for finding the right coffee.
+- **Check-in:** Fast one-hand ritual capture flow.
+- **Map:** Specialty navigator with quality signals and filtering.
+- **Profile:** Taste progression, badges, trust level, and history.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Design System + Experience Standards
+- Tokens: `/home/runner/work/brewno/brewno/constants/tokens.ts`
+- Experience standards: `/home/runner/work/brewno/brewno/constants/experience.ts`
+- Brand microcopy: `/home/runner/work/brewno/brewno/constants/content.ts`
+- Analytics event map: `/home/runner/work/brewno/brewno/constants/analytics.ts`
+- Release quality gate: `/home/runner/work/brewno/brewno/docs/quality-gate.md`
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Roadmap (3 phases)
 
-## Get a fresh project
+### Phase 1 — Quality & consistency baseline
+- Unify token usage and copy voice across critical screens
+- Strengthen step validations and accessibility labels
+- Instrument core product events
 
-When you're ready, run:
+### Phase 2 — Premium interaction & discovery depth
+- Expand recommendation explanations and ranking transparency
+- Deepen discover and map filtering/routing context
+- Improve progressive loading and animation smoothness
+
+### Phase 3 — Community + personalization polish
+- Richer social graph and trust indicators
+- Advanced progression systems and badge storytelling
+- Final award-level polish pass with quality gate enforcement
+
+## Local development
+
+Install dependencies:
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Run app:
 
-## Learn more
+```bash
+npx expo start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+Run lint:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npm run lint
+```
 
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.

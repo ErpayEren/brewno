@@ -14,6 +14,7 @@ import {
   Colors, Typography, Spacing, Radius, SPRING, SPRING_SNAPPY,
   HERO_GRADIENTS, SHADOWS,
 } from '../../constants/tokens';
+import { trackEvent, ANALYTICS_EVENTS } from '../../constants/analytics';
 
 const { width: W } = Dimensions.get('window');
 const CARD_W = (W - Spacing.lg * 2 - Spacing.md) / 2;
@@ -24,6 +25,8 @@ const GROUPS = {
   Origin:  ['All', 'Ethiopia', 'Kenya', 'Colombia', 'Panama', 'Yemen'],
 } as const;
 type GroupKey = keyof typeof GROUPS;
+const SORTS = ['BrewScore', 'Rating', 'Name'] as const;
+type SortKey = (typeof SORTS)[number];
 
 // ─── Search bar ───────────────────────────────────────────────────────────────
 function SearchBar({ value, onChange }: { value: string; onChange: (v: string) => void }) {
@@ -206,8 +209,19 @@ export default function DiscoverScreen() {
   const [query, setQuery] = useState('');
   const [group, setGroup] = useState<GroupKey>('Process');
   const [filters, setFilters] = useState<Record<GroupKey, string>>({ Process:'All', Roast:'All', Origin:'All' });
+  const [sortBy, setSortBy] = useState<SortKey>('BrewScore');
 
   const { data, isLoading, isError, error, refetch } = useCoffees(query, filters);
+  const sortedData = React.useMemo(() => {
+    const list = [...(data ?? [])];
+    if (sortBy === 'Rating') {
+      return list.sort((a: any, b: any) => parseFloat(b.avg_rating ?? '0') - parseFloat(a.avg_rating ?? '0'));
+    }
+    if (sortBy === 'Name') {
+      return list.sort((a: any, b: any) => String(a.name ?? '').localeCompare(String(b.name ?? '')));
+    }
+    return list.sort((a: any, b: any) => (b.brew_score ?? 0) - (a.brew_score ?? 0));
+  }, [data, sortBy]);
 
   const renderItem = useCallback(({ item, index }: any) => (
     <CoffeeCard item={item} index={index} />
@@ -254,7 +268,10 @@ export default function DiscoverScreen() {
           return (
             <TouchableOpacity
               key={val}
-              onPress={() => setFilters(p => ({ ...p, [group]: val }))}
+              onPress={() => {
+                setFilters(p => ({ ...p, [group]: val }));
+                trackEvent(ANALYTICS_EVENTS.discoverFilterApplied, { group, value: val });
+              }}
               style={[ds.chip, active && ds.chipActive]}
               accessibilityRole="button"
             >
@@ -265,15 +282,26 @@ export default function DiscoverScreen() {
         })}
       </Animated.View>
 
+      <Animated.View entering={FadeInDown.delay(220).duration(400)} style={ds.sortRow}>
+        {SORTS.map((sort) => {
+          const active = sortBy === sort;
+          return (
+            <TouchableOpacity key={sort} onPress={() => setSortBy(sort)} style={[ds.sortChip, active && ds.sortChipActive]} accessibilityRole="button" accessibilityLabel={`Sort by ${sort}`}>
+              <Text style={[ds.sortChipText, active && ds.sortChipTextActive]}>{sort}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </Animated.View>
+
       {/* Count */}
-      <Text style={ds.count}>{data?.length ?? 0} COFFEES · {query ? 'FILTERED' : 'ALL ORIGINS'}</Text>
+      <Text style={ds.count}>{sortedData.length} COFFEES · {query ? 'FILTERED' : 'ALL ORIGINS'} · SORT {sortBy.toUpperCase()}</Text>
     </View>
   );
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.ink }}>
       <FlatList
-        data={isLoading ? [] : (data ?? [])}
+        data={isLoading ? [] : sortedData}
         renderItem={renderItem}
         keyExtractor={i => i.id}
         numColumns={2}
@@ -325,5 +353,18 @@ const ds = StyleSheet.create({
   chipGlow: { ...StyleSheet.absoluteFillObject, backgroundColor: Colors.copperGlowSoft },
   chipText: { fontFamily: 'SyneMono-Regular', fontSize: 9, color: Colors.fog, letterSpacing: 1 },
   chipTextActive: { color: Colors.cream },
+  sortRow: { flexDirection: 'row', gap: Spacing.sm, marginBottom: Spacing.md, flexWrap: 'wrap' },
+  sortChip: {
+    borderRadius: Radius.full,
+    borderWidth: 1,
+    borderColor: Colors.hairline,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    minHeight: 32,
+    justifyContent: 'center',
+  },
+  sortChipActive: { borderColor: Colors.copper, backgroundColor: Colors.roast },
+  sortChipText: { fontFamily: 'SyneMono-Regular', fontSize: 8, color: Colors.fog, letterSpacing: 1 },
+  sortChipTextActive: { color: Colors.cream },
   count: { fontFamily: 'SyneMono-Regular', fontSize: 9, color: Colors.mist, letterSpacing: 2, marginBottom: Spacing.lg },
 });

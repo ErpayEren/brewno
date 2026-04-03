@@ -12,9 +12,9 @@ import { Colors, Typography, Spacing, Radius, SPRING, HERO_GRADIENTS } from '../
 const { width: W } = Dimensions.get('window');
 
 const CAFES = [
-  { id:'1', name:'Petra Roasting', distance:'180m', open:true, score:4.8, lat:41.06, lng:29.01 },
-  { id:'2', name:'Café Moda',      distance:'340m', open:true, score:4.6, lat:41.055, lng:29.015 },
-  { id:'3', name:'Norm Coffee',    distance:'510m', open:true, score:4.5, lat:41.065, lng:29.02 },
+  { id:'1', name:'Petra Roasting', distance:'180m', open:true, score:4.8, lat:41.06, lng:29.01, specialty: true, trusted: true },
+  { id:'2', name:'Café Moda',      distance:'340m', open:true, score:4.6, lat:41.055, lng:29.015, specialty: true, trusted: false },
+  { id:'3', name:'Norm Coffee',    distance:'510m', open:true, score:4.5, lat:41.065, lng:29.02, specialty: true, trusted: true },
 ];
 
 const MAP_STYLE = [
@@ -94,6 +94,9 @@ function CaféRow({ item, last, onPress }: { item: typeof CAFES[0]; last: boolea
           <Text style={cr.meta}>
             {item.distance} · <Text style={{ color: item.open ? Colors.amber : Colors.fog }}>{item.open ? 'Open' : 'Closed'}</Text>
           </Text>
+          <Text style={cr.signal}>
+            {item.specialty ? 'Specialty' : 'Café'} · {item.trusted ? 'Trusted picks' : 'New spot'}
+          </Text>
         </View>
         <Text style={cr.score}>{item.score.toFixed(1)}</Text>
       </TouchableOpacity>
@@ -106,6 +109,7 @@ const cr = StyleSheet.create({
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.copper },
   name: { ...Typography.body, color: Colors.cream, fontWeight:'700' as any, marginBottom: 2 },
   meta: { ...Typography.labelSm, color: Colors.fog },
+  signal: { fontFamily: 'SyneMono-Regular', fontSize: 8, color: Colors.copper, letterSpacing: 0.6, marginTop: 2 },
   score: { fontFamily:'CormorantGaramond-SemiBold', fontSize: 24, color: Colors.gold, lineHeight: 28 },
 });
 
@@ -114,6 +118,8 @@ export default function MapScreen() {
   const [selectedCafe, setSelectedCafe] = useState<string | null>('1');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
+  const [onlyOpen, setOnlyOpen] = useState(false);
+  const [onlyTrusted, setOnlyTrusted] = useState(false);
   const mapRef = useRef<any>(null);
 
   const drawerOpacity = useSharedValue(0);
@@ -138,9 +144,12 @@ export default function MapScreen() {
 
   // ─── Web Layout ──────────────────────────────────────────────────────────────
   if (Platform.OS === 'web') {
-    const filtered = searchQuery.trim()
-      ? CAFES.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
-      : CAFES;
+    const filtered = CAFES.filter((c) => {
+      const matchesQuery = searchQuery.trim() ? c.name.toLowerCase().includes(searchQuery.toLowerCase()) : true;
+      const matchesOpen = onlyOpen ? c.open : true;
+      const matchesTrusted = onlyTrusted ? c.trusted : true;
+      return matchesQuery && matchesOpen && matchesTrusted;
+    });
     return (
       <ScrollView style={{ flex: 1, backgroundColor: Colors.ink }} contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
         {/* Page header */}
@@ -171,6 +180,14 @@ export default function MapScreen() {
             )}
           </View>
         </Animated.View>
+        <View style={webStyles.filterRow}>
+          <TouchableOpacity onPress={() => setOnlyOpen((v) => !v)} style={[webStyles.filterChip, onlyOpen && webStyles.filterChipActive]} accessibilityRole="button">
+            <Text style={[webStyles.filterChipText, onlyOpen && webStyles.filterChipTextActive]}>Open now</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setOnlyTrusted((v) => !v)} style={[webStyles.filterChip, onlyTrusted && webStyles.filterChipActive]} accessibilityRole="button">
+            <Text style={[webStyles.filterChipText, onlyTrusted && webStyles.filterChipTextActive]}>Trusted</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Map placeholder card */}
         <Animated.View entering={FadeInDown.delay(120).duration(400)} style={webStyles.mapPlaceholder}>
@@ -247,17 +264,27 @@ export default function MapScreen() {
             accessibilityLabel="Search cafés"
           />
         </View>
+        <View style={styles.nativeFilterRow}>
+          <TouchableOpacity onPress={() => setOnlyOpen((v) => !v)} style={[styles.nativeFilterChip, onlyOpen && styles.nativeFilterChipActive]} accessibilityRole="button">
+            <Text style={[styles.nativeFilterChipText, onlyOpen && styles.nativeFilterChipTextActive]}>Open</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setOnlyTrusted((v) => !v)} style={[styles.nativeFilterChip, onlyTrusted && styles.nativeFilterChipActive]} accessibilityRole="button">
+            <Text style={[styles.nativeFilterChipText, onlyTrusted && styles.nativeFilterChipTextActive]}>Trusted</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Bottom Drawer */}
       <Animated.View style={[styles.drawer, drawerStyle]}>
         <View style={styles.handle} />
-        <Text style={styles.drawerLabel}>{CAFES.length} SPECIALTY CAFÉS NEARBY</Text>
-        {CAFES.map((cafe, i) => (
+        <Text style={styles.drawerLabel}>
+          {CAFES.filter((c) => (!onlyOpen || c.open) && (!onlyTrusted || c.trusted)).length} SPECIALTY CAFÉS NEARBY
+        </Text>
+        {CAFES.filter((c) => (!onlyOpen || c.open) && (!onlyTrusted || c.trusted)).map((cafe, i, arr) => (
           <CaféRow
             key={cafe.id}
             item={cafe}
-            last={i === CAFES.length - 1}
+            last={i === arr.length - 1}
             onPress={() => handleCafeSelect(cafe)}
           />
         ))}
@@ -282,6 +309,11 @@ const webStyles = StyleSheet.create({
     paddingHorizontal: Spacing.base, paddingVertical: 12,
   },
   searchInput: { flex: 1, fontFamily: 'Syne-Regular', fontSize: 14, color: Colors.cream, lineHeight: 18 },
+  filterRow: { flexDirection: 'row', gap: Spacing.sm, paddingHorizontal: Spacing.lg, marginBottom: Spacing.lg },
+  filterChip: { borderWidth: 1, borderColor: Colors.hairline, borderRadius: Radius.full, paddingHorizontal: 12, paddingVertical: 6, minHeight: 32, justifyContent: 'center' },
+  filterChipActive: { borderColor: Colors.copper, backgroundColor: Colors.roast },
+  filterChipText: { fontFamily: 'SyneMono-Regular', fontSize: 9, color: Colors.fog, letterSpacing: 1 },
+  filterChipTextActive: { color: Colors.cream },
   mapPlaceholder: {
     marginHorizontal: Spacing.lg, marginBottom: Spacing.xl,
     backgroundColor: Colors.roast, borderRadius: Radius.xl,
@@ -305,6 +337,11 @@ const styles = StyleSheet.create({
   searchFloat: { position:'absolute', top: Platform.OS === 'ios' ? 56 : 36, left: Spacing.base, right: Spacing.base },
   searchBar: { flexDirection:'row', alignItems:'center', gap: Spacing.sm, backgroundColor: Platform.OS === 'ios' ? Colors.glass : 'rgba(14,12,11,0.92)', borderRadius: Radius.lg, paddingHorizontal: Spacing.base, paddingVertical: 10 },
   searchInput: { flex: 1, ...Typography.body, color: Colors.cream },
+  nativeFilterRow: { flexDirection: 'row', gap: Spacing.sm, marginTop: Spacing.sm },
+  nativeFilterChip: { borderWidth: 1, borderColor: Colors.hairline, borderRadius: Radius.full, paddingHorizontal: 10, paddingVertical: 5, minHeight: 30, justifyContent: 'center', backgroundColor: Colors.glass },
+  nativeFilterChipActive: { borderColor: Colors.copper, backgroundColor: Colors.roast },
+  nativeFilterChipText: { fontFamily: 'SyneMono-Regular', fontSize: 8, color: Colors.fog, letterSpacing: 1 },
+  nativeFilterChipTextActive: { color: Colors.cream },
   drawer: {
     position:'absolute', bottom: Platform.OS === 'ios' ? 88 : 72,
     left: Spacing.base, right: Spacing.base,
