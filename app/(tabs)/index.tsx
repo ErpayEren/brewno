@@ -590,7 +590,7 @@ export default function FeedScreen() {
         <FlatList
           data={isLoading ? [] : (data ?? [])}
           renderItem={renderCard}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => (item as FeedCardItem).id}
           ListHeaderComponent={
             <FeedHeader active={filter} onFilter={setFilter} profile={profile} recommendations={recommendations} trending={trending} userId={user?.id} greeting={greeting} />
           }
