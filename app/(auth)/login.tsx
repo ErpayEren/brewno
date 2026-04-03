@@ -14,6 +14,7 @@ import { useUIStore } from '../../stores/uiStore';
 import { Colors, Spacing, Radius, SPRING, SPRING_SNAPPY, SHADOWS, Typography } from '../../constants/tokens';
 
 const { width: W, height: H } = Dimensions.get('window');
+const BLOOM_W = Platform.OS === 'web' ? Math.min(W, 500) : W;
 
 // ─── Animated input field ─────────────────────────────────────────────────────
 function Field({
@@ -131,7 +132,10 @@ export default function LoginScreen() {
       <View style={styles.bloom2} />
 
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[
+          styles.scroll,
+          Platform.OS === 'web' && { maxWidth: 480, alignSelf: 'center' as const, width: '100%' },
+        ]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -230,14 +234,14 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.ink },
   bloom1: {
-    position: 'absolute', width: W * 1.4, height: W * 1.4, borderRadius: W * 0.7,
+    position: 'absolute', width: BLOOM_W * 1.4, height: BLOOM_W * 1.4, borderRadius: BLOOM_W * 0.7,
     backgroundColor: '#3d1f0f', opacity: 0.45,
-    top: -W * 0.5, left: -W * 0.3,
+    top: -BLOOM_W * 0.5, left: -BLOOM_W * 0.3,
   },
   bloom2: {
-    position: 'absolute', width: W, height: W, borderRadius: W * 0.5,
+    position: 'absolute', width: BLOOM_W, height: BLOOM_W, borderRadius: BLOOM_W * 0.5,
     backgroundColor: '#160e22', opacity: 0.6,
-    bottom: -W * 0.3, right: -W * 0.2,
+    bottom: -BLOOM_W * 0.3, right: -BLOOM_W * 0.2,
   },
   scroll: {
     flexGrow: 1,

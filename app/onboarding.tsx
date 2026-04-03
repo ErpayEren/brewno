@@ -100,7 +100,7 @@ function Slide({ slide, active, index }: { slide: typeof SLIDES[0]; active: bool
 }
 
 const sl = StyleSheet.create({
-  slide: { flex: 1, overflow: 'hidden' },
+  slide: { flex: 1, height: H, overflow: 'hidden' },
   bloom: {
     position: 'absolute', width: W * 2.2, height: W * 2.2, borderRadius: W * 1.1,
     top: -W * 0.4, left: -W * 0.6, opacity: 0.65,
@@ -127,7 +127,7 @@ const sl = StyleSheet.create({
     fontFamily: 'CormorantGaramond-LightItalic',
     fontSize: 26, lineHeight: 30, marginBottom: Spacing.lg,
   },
-  body: { fontFamily: 'Syne-Regular', fontSize: 14, color: Colors.fog, lineHeight: 22 },
+  body: { fontFamily: 'Syne-Regular', fontSize: 14, color: Colors.fog, lineHeight: 26 },
 });
 
 // ─── Main ─────────────────────────────────────────────────────────────────────

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  TextInput, Platform, ActivityIndicator,
+  TextInput, Platform, ActivityIndicator, useWindowDimensions,
 } from 'react-native';
 import Animated, {
   useSharedValue, useAnimatedStyle, withSpring, withTiming,
@@ -152,6 +152,7 @@ export default function CheckInScreen() {
   const [savedVisible, setSavedVisible] = useState(false);
   const [scannerVisible, setScannerVisible] = useState(false);
 
+  const { width: panelW } = useWindowDimensions();
   const { user } = useAuthStore();
   const { showToast } = useUIStore();
   const { data: coffees } = useCoffees(coffeeSearch);
@@ -164,11 +165,11 @@ export default function CheckInScreen() {
   const btnStyle = useAnimatedStyle(() => ({ transform: [{ scale: btnScale.value }] }));
 
   const goNext = () => {
-    panelX.value = withSpring(-(step + 1) * 500, { mass: 0.9, stiffness: 180, damping: 20 });
+    panelX.value = withSpring(-(step + 1) * panelW, { mass: 0.9, stiffness: 180, damping: 20 });
     setStep(s => (s + 1) as Step);
   };
   const goPrev = () => {
-    panelX.value = withSpring(-(step - 1) * 500, { mass: 0.9, stiffness: 180, damping: 20 });
+    panelX.value = withSpring(-(step - 1) * panelW, { mass: 0.9, stiffness: 180, damping: 20 });
     setStep(s => (s - 1) as Step);
   };
 
@@ -451,7 +452,7 @@ const styles = StyleSheet.create({
   selectedTags: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm, marginBottom: Spacing.lg },
   selectedTag: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: Radius.full, backgroundColor: Colors.roast, borderWidth: 1, borderColor: Colors.amber },
   selectedTagText: { fontFamily: 'SyneMono-Regular', fontSize: 9, color: Colors.amber, letterSpacing: 1 },
-  bottomBar: { position: 'absolute', bottom: Platform.OS === 'ios' ? 32 : 16, left: Spacing.lg, right: Spacing.lg },
+  bottomBar: { position: 'absolute', bottom: Platform.OS === 'ios' ? 32 : Platform.OS === 'web' ? 86 : 16, left: Spacing.lg, right: Spacing.lg },
   continueBtn: { backgroundColor: Colors.copper, borderRadius: Radius.xl, paddingVertical: Spacing.base, alignItems: 'center' },
   btnDisabled: { opacity: 0.4 },
   continueBtnText: { fontFamily: 'Syne-Regular', fontSize: 15, color: Colors.ink, fontWeight: '700' as any },

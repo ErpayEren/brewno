@@ -558,47 +558,49 @@ export default function FeedScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: Colors.ink }}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.ink} />
-      <FlatList
-        data={isLoading ? [] : (data ?? [])}
-        renderItem={renderCard}
-        keyExtractor={(item) => item.id}
-        ListHeaderComponent={
-          <FeedHeader active={filter} onFilter={setFilter} profile={profile} recommendations={recommendations} trending={trending} userId={user?.id} />
-        }
-        ListEmptyComponent={
-          isLoading
-            ? (
-              <View style={{ paddingHorizontal: Spacing.lg }}>
-                <FeedCardSkeleton />
-                <FeedCardSkeleton />
-              </View>
-            )
-            : isError
-            ? <ErrorState message={(error as Error)?.message} onRetry={refetch} />
-            : (
-              <EmptyState
-                emoji="☕"
-                title="Your first cup is waiting."
-                subtitle="Find a specialty café nearby and do your first check-in."
-                ctaLabel="Start check-in →"
-                onCta={() => router.push('/(tabs)/check-in' as any)}
-              />
-            )
-        }
-        contentContainerStyle={{ paddingHorizontal: Spacing.lg, paddingBottom: 120 }}
-        showsVerticalScrollIndicator={false}
-        removeClippedSubviews
-        initialNumToRender={4}
-        maxToRenderPerBatch={4}
-        windowSize={7}
-        refreshControl={
-          <RefreshControl
-            refreshing={isFetching && !isLoading}
-            onRefresh={refetch}
-            tintColor={Colors.copper}
-          />
-        }
-      />
+      <View style={[{ flex: 1 }, Platform.OS === 'web' && { maxWidth: 720, alignSelf: 'center' as const, width: '100%' }]}>
+        <FlatList
+          data={isLoading ? [] : (data ?? [])}
+          renderItem={renderCard}
+          keyExtractor={(item) => item.id}
+          ListHeaderComponent={
+            <FeedHeader active={filter} onFilter={setFilter} profile={profile} recommendations={recommendations} trending={trending} userId={user?.id} />
+          }
+          ListEmptyComponent={
+            isLoading
+              ? (
+                <View style={{ paddingHorizontal: Spacing.lg }}>
+                  <FeedCardSkeleton />
+                  <FeedCardSkeleton />
+                </View>
+              )
+              : isError
+              ? <ErrorState message={(error as Error)?.message} onRetry={refetch} />
+              : (
+                <EmptyState
+                  emoji="☕"
+                  title="Your first cup is waiting."
+                  subtitle="Find a specialty café nearby and do your first check-in."
+                  ctaLabel="Start check-in →"
+                  onCta={() => router.push('/(tabs)/check-in' as any)}
+                />
+              )
+          }
+          contentContainerStyle={{ paddingHorizontal: Spacing.lg, paddingBottom: 120 }}
+          showsVerticalScrollIndicator={false}
+          removeClippedSubviews
+          initialNumToRender={4}
+          maxToRenderPerBatch={4}
+          windowSize={7}
+          refreshControl={
+            <RefreshControl
+              refreshing={isFetching && !isLoading}
+              onRefresh={refetch}
+              tintColor={Colors.copper}
+            />
+          }
+        />
+      </View>
     </View>
   );
 }
