@@ -159,7 +159,6 @@ const pb = StyleSheet.create({
 function CustomTabBar({ state, descriptors, navigation }: any) {
   return (
     <View style={bar.outerWrap} pointerEvents="box-none">
-      {!IS_WEB && <View style={bar.mobileBaseFill} pointerEvents="none" />}
       <View style={bar.pill}>
         {/* Glass blur backdrop */}
         <View style={bar.blurBg} />
@@ -205,35 +204,25 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
 const BAR_HEIGHT = Platform.OS === 'ios' ? 82 : 70;
 const bar = StyleSheet.create({
   outerWrap: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
-    height: BAR_HEIGHT + (Platform.OS === 'ios' ? 28 : 18),
+    position: 'absolute', left: 0, right: 0, bottom: 0,
+    height: BAR_HEIGHT + (Platform.OS === 'ios' ? 46 : 34),
     alignItems: 'center', justifyContent: 'flex-end',
     paddingTop: IS_WEB ? 14 : 0,
-    paddingBottom: Platform.OS === 'ios' ? 16 : 0,
-  },
-  mobileBaseFill: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(8,7,6,0.96)',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.08)',
+    paddingBottom: Platform.OS === 'ios' ? 20 : 12,
   },
   pill: {
-    width: IS_WEB ? 620 : '100%',
+    width: IS_WEB ? 620 : '94%',
     height: BAR_HEIGHT,
     maxWidth: '100%',
-    borderRadius: IS_WEB ? Radius.xxl : 0,
-    borderTopLeftRadius: IS_WEB ? Radius.xxl : 26,
-    borderTopRightRadius: IS_WEB ? Radius.xxl : 26,
-    borderBottomLeftRadius: IS_WEB ? Radius.xxl : 0,
-    borderBottomRightRadius: IS_WEB ? Radius.xxl : 0,
+    borderRadius: IS_WEB ? Radius.xxl : 32,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: IS_WEB ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.09)',
+    borderColor: IS_WEB ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.12)',
     ...SHADOWS.dark,
   },
   blurBg: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: IS_WEB ? 'rgba(13,10,8,0.93)' : 'rgba(11,9,8,0.98)',
+    backgroundColor: IS_WEB ? 'rgba(13,10,8,0.93)' : 'rgba(11,9,8,0.94)',
   },
   inner: {
     flex: 1, flexDirection: 'row',
