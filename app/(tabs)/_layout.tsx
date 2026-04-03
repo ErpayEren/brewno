@@ -139,19 +139,21 @@ function PlusButton({ onPress }: { onPress: () => void }) {
   );
 }
 
+const IS_WEB = Platform.OS === 'web';
 const pb = StyleSheet.create({
-  outer: { alignItems: 'center', justifyContent: 'center', marginTop: -20, width: 76, height: 52 },
+  outer: { alignItems: 'center', justifyContent: 'center', marginTop: IS_WEB ? 0 : -20, width: 76, height: 52 },
   ring: {
-    position: 'absolute', width: 68, height: 68, borderRadius: 34,
+    position: 'absolute',
+    width: IS_WEB ? 50 : 68, height: IS_WEB ? 50 : 68, borderRadius: IS_WEB ? 25 : 34,
     borderWidth: 1.5, borderColor: Colors.copper,
   },
   btn: {
-    width: 56, height: 56, borderRadius: 28,
+    width: IS_WEB ? 42 : 56, height: IS_WEB ? 42 : 56, borderRadius: IS_WEB ? 21 : 28,
     backgroundColor: Colors.copper,
     alignItems: 'center', justifyContent: 'center',
     ...SHADOWS.copper,
   },
-  plus: { fontFamily: 'Syne-Bold', fontSize: 26, color: Colors.ink, lineHeight: 30, marginTop: -1 },
+  plus: { fontFamily: 'Syne-Bold', fontSize: IS_WEB ? 22 : 26, color: Colors.ink, lineHeight: IS_WEB ? 26 : 30, marginTop: -1 },
 });
 
 // ─── Custom Tab Bar ────────────────────────────────────────────────────────────

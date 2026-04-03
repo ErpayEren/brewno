@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TextInput, TouchableOpacity,
-  Platform, Dimensions, FlatList,
+  Platform, Dimensions, ScrollView,
 } from 'react-native';
 import Animated, {
   useSharedValue, useAnimatedStyle, withSpring, withTiming,
-  withDelay, FadeIn,
+  withDelay, FadeIn, FadeInDown,
 } from 'react-native-reanimated';
 import { Colors, Typography, Spacing, Radius, SPRING, HERO_GRADIENTS } from '../../constants/tokens';
 
@@ -136,10 +136,79 @@ export default function MapScreen() {
     }
   };
 
+  // ─── Web Layout ──────────────────────────────────────────────────────────────
+  if (Platform.OS === 'web') {
+    const filtered = searchQuery.trim()
+      ? CAFES.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      : CAFES;
+    return (
+      <ScrollView style={{ flex: 1, backgroundColor: Colors.ink }} contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
+        {/* Page header */}
+        <Animated.View entering={FadeIn.duration(500)} style={webStyles.header}>
+          <Text style={webStyles.eyebrow}>SPECIALTY CAFÉS</Text>
+          <Text style={webStyles.title}>Nearby</Text>
+          <Text style={webStyles.subtitle}>Discover specialty coffee shops around you.</Text>
+        </Animated.View>
+
+        {/* Search bar */}
+        <Animated.View entering={FadeInDown.delay(80).duration(400)} style={webStyles.searchWrap}>
+          <View style={[webStyles.searchBar, { borderColor: searchFocused ? Colors.copper : Colors.hairline, borderWidth: searchFocused ? 1.5 : 1 }]}>
+            <Text style={{ color: Colors.copper, fontSize: 15 }}>⊙</Text>
+            <TextInput
+              style={webStyles.searchInput}
+              placeholder="Search specialty cafés..."
+              placeholderTextColor={Colors.fog}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
+              accessibilityLabel="Search cafés"
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery('')} style={{ padding: 4 }}>
+                <Text style={{ color: Colors.fog, fontSize: 12 }}>✕</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </Animated.View>
+
+        {/* Map placeholder card */}
+        <Animated.View entering={FadeInDown.delay(120).duration(400)} style={webStyles.mapPlaceholder}>
+          <Text style={webStyles.mapEmoji}>🗺️</Text>
+          <Text style={webStyles.mapTitle}>Interactive Map</Text>
+          <Text style={webStyles.mapSub}>Full interactive map is available on the mobile app.{'\n'}Specialty cafés nearby are listed below.</Text>
+        </Animated.View>
+
+        {/* Section label */}
+        <Text style={webStyles.sectionLabel}>{filtered.length} SPECIALTY CAFÉS NEARBY</Text>
+
+        {/* Café list */}
+        <View style={webStyles.listWrap}>
+          {filtered.length === 0 ? (
+            <View style={{ padding: Spacing.xl, alignItems: 'center' }}>
+              <Text style={{ fontFamily: 'SyneMono-Regular', fontSize: 11, color: Colors.fog, letterSpacing: 1 }}>No cafés match your search.</Text>
+            </View>
+          ) : (
+            filtered.map((cafe, i) => (
+              <Animated.View key={cafe.id} entering={FadeInDown.delay(160 + i * 60).duration(400)}>
+                <CaféRow
+                  item={cafe}
+                  last={i === filtered.length - 1}
+                  onPress={() => handleCafeSelect(cafe)}
+                />
+              </Animated.View>
+            ))
+          )}
+        </View>
+      </ScrollView>
+    );
+  }
+
+  // ─── Native Layout ────────────────────────────────────────────────────────────
   return (
     <View style={styles.container}>
       {/* Map */}
-      {Platform.OS !== 'web' && MapView ? (
+      {MapView ? (
         <MapView
           ref={mapRef}
           style={StyleSheet.absoluteFillObject}
@@ -196,6 +265,40 @@ export default function MapScreen() {
     </View>
   );
 }
+
+const webStyles = StyleSheet.create({
+  header: {
+    paddingTop: 44,
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.xl,
+  },
+  eyebrow: { fontFamily: 'SyneMono-Regular', fontSize: 9, color: Colors.copper, letterSpacing: 3, marginBottom: Spacing.sm },
+  title: { fontFamily: 'CormorantGaramond-LightItalic', fontSize: 48, lineHeight: 52, color: Colors.cream, marginBottom: Spacing.sm },
+  subtitle: { fontFamily: 'Syne-Regular', fontSize: 13, color: Colors.fog, lineHeight: 18 },
+  searchWrap: { paddingHorizontal: Spacing.lg, marginBottom: Spacing.xl },
+  searchBar: {
+    flexDirection: 'row', alignItems: 'center', gap: Spacing.sm,
+    backgroundColor: Colors.roast, borderRadius: Radius.xl,
+    paddingHorizontal: Spacing.base, paddingVertical: 12,
+  },
+  searchInput: { flex: 1, fontFamily: 'Syne-Regular', fontSize: 14, color: Colors.cream, lineHeight: 18 },
+  mapPlaceholder: {
+    marginHorizontal: Spacing.lg, marginBottom: Spacing.xl,
+    backgroundColor: Colors.roast, borderRadius: Radius.xl,
+    borderWidth: 1, borderColor: Colors.hairline,
+    paddingVertical: Spacing.xxl, alignItems: 'center',
+  },
+  mapEmoji: { fontSize: 52, marginBottom: Spacing.md },
+  mapTitle: { fontFamily: 'CormorantGaramond-Italic', fontSize: 24, color: Colors.cream, lineHeight: 28, marginBottom: Spacing.sm },
+  mapSub: { fontFamily: 'Syne-Regular', fontSize: 12, color: Colors.fog, textAlign: 'center', lineHeight: 18, paddingHorizontal: Spacing.xl },
+  sectionLabel: { fontFamily: 'SyneMono-Regular', fontSize: 9, color: Colors.fog, letterSpacing: 3, paddingHorizontal: Spacing.lg, marginBottom: Spacing.md },
+  listWrap: {
+    marginHorizontal: Spacing.lg,
+    backgroundColor: 'rgba(14,12,11,0.95)',
+    borderRadius: Radius.xl, paddingHorizontal: Spacing.lg,
+    borderWidth: 1, borderColor: Colors.hairline,
+  },
+});
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.ink },

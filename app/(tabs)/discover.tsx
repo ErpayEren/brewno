@@ -39,7 +39,7 @@ function SearchBar({ value, onChange }: { value: string; onChange: (v: string) =
       <TextInput
         style={sb.input}
         placeholder="Origin, variety, roastery..."
-        placeholderTextColor={Colors.mist}
+        placeholderTextColor={Colors.fog}
         value={value}
         onChangeText={onChange}
         onFocus={() => { setFocused(true); borderAnim.value = withTiming(1, { duration: 200 }); }}
