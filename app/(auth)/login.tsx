@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import {
   View, Text, StyleSheet, TextInput, TouchableOpacity,
   KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator,
-  Dimensions,
+  useWindowDimensions,
 } from 'react-native';
 import Animated, {
   useSharedValue, useAnimatedStyle, withSpring, withTiming, withSequence,
@@ -12,9 +12,6 @@ import { router } from 'expo-router';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
 import { Colors, Spacing, Radius, SPRING, SPRING_SNAPPY, SHADOWS, Typography } from '../../constants/tokens';
-
-const { width: W, height: H } = Dimensions.get('window');
-const BLOOM_W = Platform.OS === 'web' ? Math.min(W, 500) : W;
 
 // ─── Animated input field ─────────────────────────────────────────────────────
 function Field({
@@ -86,6 +83,9 @@ export default function LoginScreen() {
   const [username, setUsername] = useState('');
   const [fullName, setFullName] = useState('');
 
+  const { width: winW } = useWindowDimensions();
+  const bloomW = Platform.OS === 'web' ? Math.min(winW, 500) : winW;
+
   const { signInWithEmail, signUpWithEmail, loading } = useAuthStore();
   const { showToast } = useUIStore();
 
@@ -127,9 +127,17 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
-      {/* Background blooms */}
-      <View style={styles.bloom1} />
-      <View style={styles.bloom2} />
+      {/* Background blooms — sizes are responsive via useWindowDimensions */}
+      <View style={{
+        position: 'absolute', width: bloomW * 1.4, height: bloomW * 1.4, borderRadius: bloomW * 0.7,
+        backgroundColor: '#3d1f0f', opacity: 0.45,
+        top: -bloomW * 0.5, left: -bloomW * 0.3,
+      }} />
+      <View style={{
+        position: 'absolute', width: bloomW, height: bloomW, borderRadius: bloomW * 0.5,
+        backgroundColor: '#160e22', opacity: 0.6,
+        bottom: -bloomW * 0.3, right: -bloomW * 0.2,
+      }} />
 
       <ScrollView
         contentContainerStyle={[
@@ -233,16 +241,6 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.ink },
-  bloom1: {
-    position: 'absolute', width: BLOOM_W * 1.4, height: BLOOM_W * 1.4, borderRadius: BLOOM_W * 0.7,
-    backgroundColor: '#3d1f0f', opacity: 0.45,
-    top: -BLOOM_W * 0.5, left: -BLOOM_W * 0.3,
-  },
-  bloom2: {
-    position: 'absolute', width: BLOOM_W, height: BLOOM_W, borderRadius: BLOOM_W * 0.5,
-    backgroundColor: '#160e22', opacity: 0.6,
-    bottom: -BLOOM_W * 0.3, right: -BLOOM_W * 0.2,
-  },
   scroll: {
     flexGrow: 1,
     paddingHorizontal: Spacing.xl,
