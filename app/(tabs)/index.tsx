@@ -184,7 +184,7 @@ const FeedCard = React.memo(function FeedCard({ item, index, userId }: {
 }) {
   const likeMutation = useLike();
   const { showToast } = useUIStore();
-  const liked = !!item.likes?.some((l) => l.user_id === userId);
+  const liked = item.likes?.some((l) => l.user_id === userId) ?? false;
   const likeCount = item.likes?.length ?? 0;
   const commentsCount = item.comments?.length ?? 0;
 

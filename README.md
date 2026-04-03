@@ -32,11 +32,11 @@ Premium coffee memory product built with Expo + Supabase.
 - **Profile:** Taste progression, badges, trust level, and history.
 
 ## Design System + Experience Standards
-- Tokens: `/home/runner/work/brewno/brewno/constants/tokens.ts`
-- Experience standards: `/home/runner/work/brewno/brewno/constants/experience.ts`
-- Brand microcopy: `/home/runner/work/brewno/brewno/constants/content.ts`
-- Analytics event map: `/home/runner/work/brewno/brewno/constants/analytics.ts`
-- Release quality gate: `/home/runner/work/brewno/brewno/docs/quality-gate.md`
+- Tokens: `./constants/tokens.ts`
+- Experience standards: `./constants/experience.ts`
+- Brand microcopy: `./constants/content.ts`
+- Analytics event map: `./constants/analytics.ts`
+- Release quality gate: `./docs/quality-gate.md`
 
 ## Roadmap (3 phases)
 
@@ -74,4 +74,3 @@ Run lint:
 ```bash
 npm run lint
 ```
-

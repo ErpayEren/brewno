@@ -28,6 +28,13 @@ type GroupKey = keyof typeof GROUPS;
 const SORTS = ['BrewScore', 'Rating', 'Name'] as const;
 type SortKey = (typeof SORTS)[number];
 
+type DiscoverCoffee = {
+  id: string;
+  name?: string | null;
+  avg_rating?: string | null;
+  brew_score?: number | null;
+};
+
 // ─── Search bar ───────────────────────────────────────────────────────────────
 function SearchBar({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const [focused, setFocused] = useState(false);
@@ -213,14 +220,14 @@ export default function DiscoverScreen() {
 
   const { data, isLoading, isError, error, refetch } = useCoffees(query, filters);
   const sortedData = React.useMemo(() => {
-    const list = [...(data ?? [])];
+    const list = [...((data ?? []) as DiscoverCoffee[])];
     if (sortBy === 'Rating') {
-      return list.sort((a: any, b: any) => parseFloat(b.avg_rating ?? '0') - parseFloat(a.avg_rating ?? '0'));
+      return list.sort((a, b) => parseFloat(b.avg_rating ?? '0') - parseFloat(a.avg_rating ?? '0'));
     }
     if (sortBy === 'Name') {
-      return list.sort((a: any, b: any) => String(a.name ?? '').localeCompare(String(b.name ?? '')));
+      return list.sort((a, b) => String(a.name ?? '').localeCompare(String(b.name ?? '')));
     }
-    return list.sort((a: any, b: any) => (b.brew_score ?? 0) - (a.brew_score ?? 0));
+    return list.sort((a, b) => (b.brew_score ?? 0) - (a.brew_score ?? 0));
   }, [data, sortBy]);
 
   const renderItem = useCallback(({ item, index }: any) => (
