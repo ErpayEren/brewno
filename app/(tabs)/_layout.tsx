@@ -285,6 +285,12 @@ export default function TabLayout() {
           tabBarAccessibilityLabel: `Profile. ${TAB_PRIMARY_JOBS.profile}`,
         }}
       />
+      <Tabs.Screen
+        name="explore"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
