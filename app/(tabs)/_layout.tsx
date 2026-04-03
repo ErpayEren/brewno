@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Tabs } from 'expo-router';
 import {
-  View, Text, StyleSheet, TouchableOpacity, Platform, Dimensions,
+  View, Text, StyleSheet, TouchableOpacity, Platform,
 } from 'react-native';
 import Animated, {
   useSharedValue, useAnimatedStyle, withSpring, withTiming, withSequence,
@@ -9,8 +9,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Colors, Spacing, Radius, SPRING, SPRING_SNAPPY, SHADOWS } from '../../constants/tokens';
 import { TAB_PRIMARY_JOBS } from '../../constants/experience';
-
-const { width: W } = Dimensions.get('window');
 
 // ─── Icon set ─────────────────────────────────────────────────────────────────
 const SVG_ICONS: Record<string, React.ReactNode> = {
@@ -142,25 +140,26 @@ function PlusButton({ onPress }: { onPress: () => void }) {
 
 const IS_WEB = Platform.OS === 'web';
 const pb = StyleSheet.create({
-  outer: { alignItems: 'center', justifyContent: 'center', marginTop: IS_WEB ? 0 : -20, width: 76, height: 52 },
+  outer: { alignItems: 'center', justifyContent: 'center', marginTop: IS_WEB ? 0 : -18, width: IS_WEB ? 62 : 74, height: 58 },
   ring: {
     position: 'absolute',
-    width: IS_WEB ? 50 : 68, height: IS_WEB ? 50 : 68, borderRadius: IS_WEB ? 25 : 34,
-    borderWidth: 1.5, borderColor: Colors.copper,
+    width: IS_WEB ? 52 : 66, height: IS_WEB ? 52 : 66, borderRadius: IS_WEB ? 26 : 33,
+    borderWidth: 1.2, borderColor: 'rgba(201,114,58,0.6)',
   },
   btn: {
-    width: IS_WEB ? 42 : 56, height: IS_WEB ? 42 : 56, borderRadius: IS_WEB ? 21 : 28,
+    width: IS_WEB ? 46 : 54, height: IS_WEB ? 46 : 54, borderRadius: IS_WEB ? 23 : 27,
     backgroundColor: Colors.copper,
     alignItems: 'center', justifyContent: 'center',
     ...SHADOWS.copper,
   },
-  plus: { fontFamily: 'Syne-Bold', fontSize: IS_WEB ? 22 : 26, color: Colors.ink, lineHeight: IS_WEB ? 26 : 30, marginTop: -1 },
+   plus: { fontFamily: 'Syne-Bold', fontSize: IS_WEB ? 21 : 25, color: Colors.ink, lineHeight: IS_WEB ? 25 : 29, marginTop: -1 },
 });
 
 // ─── Custom Tab Bar ────────────────────────────────────────────────────────────
 function CustomTabBar({ state, descriptors, navigation }: any) {
   return (
     <View style={bar.outerWrap} pointerEvents="box-none">
+      {!IS_WEB && <View style={bar.mobileBaseFill} pointerEvents="none" />}
       <View style={bar.pill}>
         {/* Glass blur backdrop */}
         <View style={bar.blurBg} />
@@ -207,27 +206,39 @@ const BAR_HEIGHT = Platform.OS === 'ios' ? 82 : 70;
 const bar = StyleSheet.create({
   outerWrap: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
-    height: BAR_HEIGHT + (Platform.OS === 'ios' ? 12 : 0),
-    alignItems: 'center', justifyContent: 'flex-start',
-    paddingTop: 10,
-    paddingBottom: Platform.OS === 'ios' ? 12 : 0,
+    height: BAR_HEIGHT + (Platform.OS === 'ios' ? 28 : 18),
+    alignItems: 'center', justifyContent: 'flex-end',
+    paddingTop: IS_WEB ? 14 : 0,
+    paddingBottom: Platform.OS === 'ios' ? 16 : 0,
+  },
+  mobileBaseFill: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(8,7,6,0.96)',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.08)',
   },
   pill: {
-    width: Math.min(W - 24, 480),
+    width: IS_WEB ? 620 : '100%',
     height: BAR_HEIGHT,
-    borderRadius: Radius.xxl,
+    maxWidth: '100%',
+    borderRadius: IS_WEB ? Radius.xxl : 0,
+    borderTopLeftRadius: IS_WEB ? Radius.xxl : 26,
+    borderTopRightRadius: IS_WEB ? Radius.xxl : 26,
+    borderBottomLeftRadius: IS_WEB ? Radius.xxl : 0,
+    borderBottomRightRadius: IS_WEB ? Radius.xxl : 0,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: IS_WEB ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.09)',
     ...SHADOWS.dark,
   },
   blurBg: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(13,10,8,0.92)',
+    backgroundColor: IS_WEB ? 'rgba(13,10,8,0.93)' : 'rgba(11,9,8,0.98)',
   },
   inner: {
     flex: 1, flexDirection: 'row',
     alignItems: 'center', justifyContent: 'space-around',
+    paddingHorizontal: IS_WEB ? 20 : 8,
   },
   tab: { flex: 1, alignItems: 'center', justifyContent: 'center', height: '100%' },
 });
