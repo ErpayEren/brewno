@@ -53,14 +53,21 @@ function Slide({ slide, active, index }: { slide: typeof SLIDES[0]; active: bool
 
   useEffect(() => {
     // Floating emoji loop
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    let isMounted = true;
     const loop = () => {
+      if (!isMounted) return;
       floatY.value = withSequence(
         withTiming(-16, { duration: 2400 }),
         withTiming(0, { duration: 2400 }),
       );
-      setTimeout(loop, 4800);
+      timeoutId = setTimeout(loop, 4800);
     };
     loop();
+    return () => {
+      isMounted = false;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, []);
 
   useEffect(() => {

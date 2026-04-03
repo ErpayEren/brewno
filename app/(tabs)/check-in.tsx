@@ -245,7 +245,7 @@ export default function CheckInScreen() {
         <Animated.View style={[{ flexDirection: 'row', width: '400%', flex: 1 }, panelStyle]}>
 
           {/* STEP 0 — Coffee */}
-          <ScrollView style={styles.panel} contentContainerStyle={styles.panelContent}>
+          <ScrollView style={[styles.panel, { width: panelW }]} contentContainerStyle={styles.panelContent}>
             <Text style={styles.stepTitle}>Which coffee?</Text>
             <StepSearchBar placeholder="Search coffee..." value={coffeeSearch} onChange={setCoffeeSearch} />
             <TouchableOpacity
@@ -279,7 +279,7 @@ export default function CheckInScreen() {
           </ScrollView>
 
           {/* STEP 1 — Café */}
-          <ScrollView style={styles.panel} contentContainerStyle={styles.panelContent}>
+          <ScrollView style={[styles.panel, { width: panelW }]} contentContainerStyle={styles.panelContent}>
             <Text style={styles.stepTitle}>Where are you?</Text>
             <StepSearchBar placeholder="Search cafés..." value={cafeSearch} onChange={setCafeSearch} />
             <Text style={styles.subLabel}>NEARBY CAFÉS</Text>
@@ -310,7 +310,7 @@ export default function CheckInScreen() {
           </ScrollView>
 
           {/* STEP 2 — Flavors */}
-          <ScrollView style={styles.panel} contentContainerStyle={styles.panelContent}>
+          <ScrollView style={[styles.panel, { width: panelW }]} contentContainerStyle={styles.panelContent}>
             <Text style={styles.stepTitle}>Tasting notes</Text>
             <Text style={styles.stepSub}>Pick what you taste. Trust your palate.</Text>
             <TastingWheel
@@ -322,7 +322,7 @@ export default function CheckInScreen() {
           </ScrollView>
 
           {/* STEP 3 — Rate */}
-          <ScrollView style={styles.panel} contentContainerStyle={styles.panelContent}>
+          <ScrollView style={[styles.panel, { width: panelW }]} contentContainerStyle={styles.panelContent}>
             <Text style={styles.stepTitle}>Your verdict</Text>
             {selectedCoffee && <Text style={styles.selectedCoffeeName}>{selectedCoffee.name}</Text>}
             <View style={styles.ratingCard}>
@@ -335,7 +335,7 @@ export default function CheckInScreen() {
                     onPress={() => handleStar(i)}
                   />
                 ))}
-                {rating > 0 && <Text style={styles.ratingNum}>{rating}.0</Text>}
+                {rating > 0 && <Text style={styles.ratingNum}>{rating.toFixed(1)}</Text>}
               </View>
             </View>
             <Text style={styles.subLabel}>TASTING NOTE</Text>
@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
   backBtn: { width: 60 },
   backText: { fontFamily: 'Syne-Regular', fontSize: 13, color: Colors.copper },
   navTitle: { fontFamily: 'CormorantGaramond-SemiBold', fontSize: 16, color: Colors.cream, textAlign: 'center' },
-  panel: { width: '25%' },
+  panel: {},
   panelContent: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.sm, paddingBottom: 40 },
   stepTitle: { fontFamily: 'CormorantGaramond-LightItalic', fontSize: 38, lineHeight: 42, color: Colors.cream, marginBottom: Spacing.sm },
   stepSub: { fontFamily: 'Syne-Regular', fontSize: 13, color: Colors.fog, marginBottom: Spacing.lg },

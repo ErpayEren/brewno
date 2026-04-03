@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useMemo } from 'react';
 import {
   View, Text, StyleSheet, Animated as RNAnimated,
   TouchableOpacity, StatusBar, Platform, RefreshControl,
@@ -40,9 +40,8 @@ function buildGreeting() {
   else if (h >= 17 && h < 21) slot = 'evening';
   const arr = PHRASES[slot];
   const l1: Record<string, string> = { morning: 'Good morning,', afternoon: 'Good afternoon,', evening: 'Good evening,', night: 'Good evening,' };
-  return { line1: l1[slot], line2: arr[Date.now() % arr.length] };
+  return { line1: l1[slot], line2: arr[Math.floor(Math.random() * arr.length)] };
 }
-const GREET = buildGreeting();
 
 // ─── Time ago ─────────────────────────────────────────────────────────────────
 function timeAgo(d: string) {
@@ -54,7 +53,7 @@ function timeAgo(d: string) {
 }
 
 // ─── Radial gradient card background ─────────────────────────────────────────
-function HeroBackground({ gi, children }: { gi: number; children?: React.ReactNode }) {
+const HeroBackground = React.memo(function HeroBackground({ gi, children }: { gi: number; children?: React.ReactNode }) {
   const g = HERO_GRADIENTS[gi % HERO_GRADIENTS.length];
   return (
     <View style={{ width: '100%', height: CARD_HERO_HEIGHT }}>
@@ -91,7 +90,7 @@ function HeroBackground({ gi, children }: { gi: number; children?: React.ReactNo
       {children}
     </View>
   );
-}
+});
 
 // ─── Rating badge ─────────────────────────────────────────────────────────────
 function StarRating({ rating }: { rating: number }) {
@@ -154,13 +153,39 @@ const ft = StyleSheet.create({
 });
 
 // ─── Feed Card ────────────────────────────────────────────────────────────────
+type FeedCardItem = {
+  id: string;
+  created_at: string;
+  rating?: number;
+  notes?: string | null;
+  tasting_notes?: string[] | null;
+  likes?: { user_id?: string | null }[] | null;
+  comments?: { id?: string }[] | null;
+  coffees?: {
+    id?: string | null;
+    name?: string | null;
+    origin_country?: string | null;
+    process_method?: string | null;
+    roasteries?: { name?: string | null; is_verified?: boolean | null } | { name?: string | null; is_verified?: boolean | null }[] | null;
+  } | {
+    id?: string | null;
+    name?: string | null;
+    origin_country?: string | null;
+    process_method?: string | null;
+    roasteries?: { name?: string | null; is_verified?: boolean | null } | { name?: string | null; is_verified?: boolean | null }[] | null;
+  }[] | null;
+  users?: { username?: string | null } | { username?: string | null }[] | null;
+  cafes?: { name?: string | null } | { name?: string | null }[] | null;
+};
+
 const FeedCard = React.memo(function FeedCard({ item, index, userId }: {
-  item: any; index: number; userId?: string;
+  item: FeedCardItem; index: number; userId?: string;
 }) {
   const likeMutation = useLike();
   const { showToast } = useUIStore();
-  const liked = item.likes?.some((l: any) => l.user_id === userId);
+  const liked = !!item.likes?.some((l) => l.user_id === userId);
   const likeCount = item.likes?.length ?? 0;
+  const commentsCount = item.comments?.length ?? 0;
 
   const cardScale = useSharedValue(1);
   const heartScale = useSharedValue(1);
@@ -186,9 +211,10 @@ const FeedCard = React.memo(function FeedCard({ item, index, userId }: {
     likeMutation.mutate({ checkinId: item.id, liked });
   };
 
-  const coffee   = item.coffees;
-  const user     = item.users;
-  const cafe     = item.cafes;
+  const coffee   = Array.isArray(item.coffees) ? item.coffees[0] : item.coffees;
+  const user     = Array.isArray(item.users) ? item.users[0] : item.users;
+  const cafe     = Array.isArray(item.cafes) ? item.cafes[0] : item.cafes;
+  const roastery = Array.isArray(coffee?.roasteries) ? coffee?.roasteries[0] : coffee?.roasteries;
   const tags     = (item.tasting_notes ?? []) as string[];
   const gi       = index % HERO_GRADIENTS.length;
 
@@ -253,17 +279,17 @@ const FeedCard = React.memo(function FeedCard({ item, index, userId }: {
           {/* Comment */}
           <TouchableOpacity style={cs.actionBtn} accessibilityRole="button" accessibilityLabel="Comment">
             <Text style={cs.actionIcon}>⌁</Text>
-            <Text style={cs.actionCount}>{item.comments?.length > 0 ? item.comments.length : ''}</Text>
+            <Text style={cs.actionCount}>{commentsCount > 0 ? commentsCount : ''}</Text>
           </TouchableOpacity>
 
           {/* Divider */}
           <View style={{ flex: 1 }} />
 
           {/* Roastery tag */}
-          {coffee?.roasteries?.name && (
+          {roastery?.name && (
             <View style={cs.roasteryTag}>
-              <Text style={cs.roasteryText}>{coffee.roasteries.name}</Text>
-              {coffee.roasteries.is_verified && <Text style={{ fontSize: 10, color: Colors.copper }}>✦</Text>}
+              <Text style={cs.roasteryText}>{roastery.name}</Text>
+              {roastery.is_verified && <Text style={{ fontSize: 10, color: Colors.copper }}>✦</Text>}
             </View>
           )}
         </View>
@@ -322,7 +348,8 @@ const cs = StyleSheet.create({
 // ─── Header Component ─────────────────────────────────────────────────────────
 function FeedHeader({
   active, onFilter, profile, recommendations, trending, userId,
-}: { active: string; onFilter: (f: string) => void; profile: any; recommendations?: any[]; trending?: any[]; userId?: string }) {
+  greeting,
+}: { active: string; onFilter: (f: string) => void; profile: any; recommendations?: any[]; trending?: any[]; userId?: string; greeting: { line1: string; line2: string } }) {
   const FILTERS = ['All', 'Following', 'Nearby'];
 
   return (
@@ -331,11 +358,11 @@ function FeedHeader({
       <Animated.View entering={FadeIn.duration(600)} style={hs.greetBlock}>
         <View style={hs.greetRow}>
           <View style={{ flex: 1 }}>
-            <Text style={hs.line1}>{GREET.line1}</Text>
+            <Text style={hs.line1}>{greeting.line1}</Text>
             <Text style={hs.line2} numberOfLines={1} adjustsFontSizeToFit>
               {profile?.full_name
                 ? profile.full_name.split(' ')[0].toLowerCase() + '.'
-                : GREET.line2}
+                : greeting.line2}
             </Text>
           </View>
           <Animated.View entering={FadeIn.delay(200).duration(400)}>
@@ -546,13 +573,14 @@ const hs = StyleSheet.create({
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 export default function FeedScreen() {
   const [filter, setFilter] = useState('All');
+  const greeting = useMemo(() => buildGreeting(), []);
   const { user, profile } = useAuthStore();
   const { data, isLoading, isError, error, refetch, isFetching } = useFeed(filter);
   const { data: recommendations } = useRecommendations(6);
   const { data: trending } = useTrending(6);
 
-  const renderCard = useCallback(({ item, index }: { item: any; index: number }) => (
-    <FeedCard item={item} index={index} userId={user?.id} />
+  const renderCard = useCallback(({ item, index }: { item: unknown; index: number }) => (
+    <FeedCard item={item as FeedCardItem} index={index} userId={user?.id} />
   ), [user?.id]);
 
   return (
@@ -564,7 +592,7 @@ export default function FeedScreen() {
           renderItem={renderCard}
           keyExtractor={(item) => item.id}
           ListHeaderComponent={
-            <FeedHeader active={filter} onFilter={setFilter} profile={profile} recommendations={recommendations} trending={trending} userId={user?.id} />
+            <FeedHeader active={filter} onFilter={setFilter} profile={profile} recommendations={recommendations} trending={trending} userId={user?.id} greeting={greeting} />
           }
           ListEmptyComponent={
             isLoading

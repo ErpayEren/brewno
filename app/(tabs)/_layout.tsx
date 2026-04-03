@@ -110,8 +110,8 @@ function PlusButton({ onPress }: { onPress: () => void }) {
         withTiming(0.3, { duration: 1400 }),
       );
     };
-    run();
     const id = setInterval(run, 2800);
+    run();
     return () => clearInterval(id);
   }, []);
 
