@@ -388,3 +388,381 @@ DROP TRIGGER IF EXISTS on_checkin_update_taste ON checkins;
 CREATE TRIGGER on_checkin_update_taste
   AFTER INSERT ON checkins
   FOR EACH ROW EXECUTE FUNCTION update_taste_profile();
+
+-- ─── VECTOR EMBEDDINGS ────────────────────────────────────
+-- Requires pgvector extension (available in Supabase by default)
+CREATE EXTENSION IF NOT EXISTS vector;
+
+-- Add embedding column to coffees (8-dimensional, matches taste_profiles dimensions)
+ALTER TABLE coffees ADD COLUMN IF NOT EXISTS flavor_embedding vector(8);
+
+-- HNSW index for fast approximate nearest-neighbour search
+CREATE INDEX IF NOT EXISTS coffees_embedding_hnsw_idx
+  ON coffees USING hnsw (flavor_embedding vector_cosine_ops);
+
+-- ─── FLAVOR ONTOLOGY ──────────────────────────────────────
+-- Hierarchical flavor table: dimension roots → categories → leaf notes
+-- Replaces hardcoded FLAVOR_MAP and supports dynamic updates
+CREATE TABLE IF NOT EXISTS flavors (
+  id         UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  name       TEXT NOT NULL UNIQUE,
+  slug       TEXT NOT NULL UNIQUE,
+  parent_id  UUID REFERENCES flavors(id),
+  dimension  TEXT CHECK (dimension IN (
+    'floral','fruity','sweet','nutty','spice','roasted','fermented','earthy'
+  )),
+  weight     FLOAT DEFAULT 1.0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS flavors_dimension_idx ON flavors(dimension);
+CREATE INDEX IF NOT EXISTS flavors_parent_idx    ON flavors(parent_id);
+
+ALTER TABLE flavors ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Anyone can view flavors" ON flavors;
+CREATE POLICY "Anyone can view flavors" ON flavors FOR SELECT USING (true);
+
+-- ─── COFFEE ↔ FLAVOR many-to-many ────────────────────────
+CREATE TABLE IF NOT EXISTS coffee_flavors (
+  coffee_id  UUID REFERENCES coffees(id)  ON DELETE CASCADE,
+  flavor_id  UUID REFERENCES flavors(id)  ON DELETE CASCADE,
+  source     TEXT CHECK (source IN ('roaster','community','ml')) DEFAULT 'community',
+  confidence FLOAT DEFAULT 1.0,
+  PRIMARY KEY (coffee_id, flavor_id, source)
+);
+
+CREATE INDEX IF NOT EXISTS coffee_flavors_coffee_idx ON coffee_flavors(coffee_id);
+CREATE INDEX IF NOT EXISTS coffee_flavors_flavor_idx ON coffee_flavors(flavor_id);
+
+ALTER TABLE coffee_flavors ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Anyone can view coffee flavors" ON coffee_flavors;
+CREATE POLICY "Anyone can view coffee flavors" ON coffee_flavors FOR SELECT USING (true);
+
+-- ─── SEED FLAVOR ONTOLOGY ─────────────────────────────────
+-- Dimension roots first, then sub-categories, then leaf notes
+-- ON CONFLICT DO NOTHING makes this idempotent
+INSERT INTO flavors (name, slug, dimension) VALUES
+  -- Dimension roots
+  ('floral',    'floral',    'floral'),
+  ('fruity',    'fruity',    'fruity'),
+  ('sweet',     'sweet',     'sweet'),
+  ('nutty',     'nutty',     'nutty'),
+  ('spice',     'spice',     'spice'),
+  ('roasted',   'roasted',   'roasted'),
+  ('fermented', 'fermented', 'fermented'),
+  ('earthy',    'earthy',    'earthy')
+ON CONFLICT (slug) DO NOTHING;
+
+-- Floral leaf notes
+INSERT INTO flavors (name, slug, dimension, parent_id)
+SELECT note, slug, 'floral', f.id
+FROM (VALUES
+  ('jasmine',       'jasmine'),
+  ('rose',          'rose'),
+  ('chamomile',     'chamomile'),
+  ('lavender',      'lavender'),
+  ('orange blossom','orange-blossom')
+) AS t(note, slug)
+JOIN flavors f ON f.slug = 'floral'
+ON CONFLICT (slug) DO NOTHING;
+
+-- Fruity sub-categories and leaf notes
+INSERT INTO flavors (name, slug, dimension, parent_id)
+SELECT note, slug, 'fruity', f.id
+FROM (VALUES
+  ('blueberry',   'blueberry'),
+  ('strawberry',  'strawberry'),
+  ('raspberry',   'raspberry'),
+  ('peach',       'peach'),
+  ('apricot',     'apricot'),
+  ('citrus',      'citrus'),
+  ('lemon',       'lemon'),
+  ('lime',        'lime'),
+  ('orange',      'orange'),
+  ('tropical',    'tropical'),
+  ('mango',       'mango'),
+  ('pineapple',   'pineapple'),
+  ('stone fruit', 'stone-fruit'),
+  ('cherry',      'cherry'),
+  ('fig',         'fig')
+) AS t(note, slug)
+JOIN flavors f ON f.slug = 'fruity'
+ON CONFLICT (slug) DO NOTHING;
+
+-- Sweet leaf notes
+INSERT INTO flavors (name, slug, dimension, parent_id)
+SELECT note, slug, 'sweet', f.id
+FROM (VALUES
+  ('caramel',     'caramel'),
+  ('honey',       'honey'),
+  ('vanilla',     'vanilla'),
+  ('brown sugar', 'brown-sugar'),
+  ('nougat',      'nougat'),
+  ('molasses',    'molasses'),
+  ('toffee',      'toffee'),
+  ('maple syrup', 'maple-syrup'),
+  ('praline',     'praline')
+) AS t(note, slug)
+JOIN flavors f ON f.slug = 'sweet'
+ON CONFLICT (slug) DO NOTHING;
+
+-- Nutty leaf notes
+INSERT INTO flavors (name, slug, dimension, parent_id)
+SELECT note, slug, 'nutty', f.id
+FROM (VALUES
+  ('hazelnut',   'hazelnut'),
+  ('almond',     'almond'),
+  ('peanut',     'peanut'),
+  ('walnut',     'walnut'),
+  ('cocoa',      'cocoa'),
+  ('dark choc',  'dark-choc'),
+  ('milk choc',  'milk-choc'),
+  ('marzipan',   'marzipan')
+) AS t(note, slug)
+JOIN flavors f ON f.slug = 'nutty'
+ON CONFLICT (slug) DO NOTHING;
+
+-- Spice leaf notes
+INSERT INTO flavors (name, slug, dimension, parent_id)
+SELECT note, slug, 'spice', f.id
+FROM (VALUES
+  ('bergamot',  'bergamot'),
+  ('cinnamon',  'cinnamon'),
+  ('clove',     'clove'),
+  ('pepper',    'pepper'),
+  ('anise',     'anise'),
+  ('cardamom',  'cardamom'),
+  ('ginger',    'ginger'),
+  ('nutmeg',    'nutmeg')
+) AS t(note, slug)
+JOIN flavors f ON f.slug = 'spice'
+ON CONFLICT (slug) DO NOTHING;
+
+-- Roasted leaf notes
+INSERT INTO flavors (name, slug, dimension, parent_id)
+SELECT note, slug, 'roasted', f.id
+FROM (VALUES
+  ('tobacco', 'tobacco'),
+  ('cedar',   'cedar'),
+  ('smoky',   'smoky'),
+  ('burnt',   'burnt'),
+  ('charred', 'charred'),
+  ('ash',     'ash'),
+  ('leather', 'leather'),
+  ('rubber',  'rubber')
+) AS t(note, slug)
+JOIN flavors f ON f.slug = 'roasted'
+ON CONFLICT (slug) DO NOTHING;
+
+-- Fermented leaf notes
+INSERT INTO flavors (name, slug, dimension, parent_id)
+SELECT note, slug, 'fermented', f.id
+FROM (VALUES
+  ('winey',    'winey'),
+  ('whiskey',  'whiskey'),
+  ('funky',    'funky'),
+  ('sour',     'sour'),
+  ('kombucha', 'kombucha'),
+  ('vinegar',  'vinegar'),
+  ('beer',     'beer'),
+  ('brandy',   'brandy')
+) AS t(note, slug)
+JOIN flavors f ON f.slug = 'fermented'
+ON CONFLICT (slug) DO NOTHING;
+
+-- Earthy leaf notes
+INSERT INTO flavors (name, slug, dimension, parent_id)
+SELECT note, slug, 'earthy', f.id
+FROM (VALUES
+  ('mushroom', 'mushroom'),
+  ('wet soil', 'wet-soil'),
+  ('mossy',    'mossy'),
+  ('herbal',   'herbal'),
+  ('hay',      'hay'),
+  ('woody',    'woody'),
+  ('cereal',   'cereal'),
+  ('grass',    'grass')
+) AS t(note, slug)
+JOIN flavors f ON f.slug = 'earthy'
+ON CONFLICT (slug) DO NOTHING;
+
+-- ─── COMPUTE COFFEE EMBEDDING ─────────────────────────────
+-- Builds an 8-dimensional flavor vector for a coffee from
+-- community tasting notes in the last 90 days.
+-- Uses the flavors ontology table for note → dimension mapping,
+-- so new flavors added to the table are picked up automatically.
+-- Call: SELECT compute_coffee_embedding('<coffee_uuid>');
+CREATE OR REPLACE FUNCTION compute_coffee_embedding(p_coffee_id UUID)
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+  dim_counts RECORD;
+  v_total    FLOAT;
+BEGIN
+  -- Join tasting notes against flavors ontology to count per dimension
+  SELECT
+    COALESCE(SUM(CASE WHEN f.dimension = 'floral'    THEN 1 ELSE 0 END), 0)::FLOAT AS v_floral,
+    COALESCE(SUM(CASE WHEN f.dimension = 'fruity'    THEN 1 ELSE 0 END), 0)::FLOAT AS v_fruity,
+    COALESCE(SUM(CASE WHEN f.dimension = 'sweet'     THEN 1 ELSE 0 END), 0)::FLOAT AS v_sweet,
+    COALESCE(SUM(CASE WHEN f.dimension = 'nutty'     THEN 1 ELSE 0 END), 0)::FLOAT AS v_nutty,
+    COALESCE(SUM(CASE WHEN f.dimension = 'spice'     THEN 1 ELSE 0 END), 0)::FLOAT AS v_spice,
+    COALESCE(SUM(CASE WHEN f.dimension = 'roasted'   THEN 1 ELSE 0 END), 0)::FLOAT AS v_roasted,
+    COALESCE(SUM(CASE WHEN f.dimension = 'fermented' THEN 1 ELSE 0 END), 0)::FLOAT AS v_fermented,
+    COALESCE(SUM(CASE WHEN f.dimension = 'earthy'    THEN 1 ELSE 0 END), 0)::FLOAT AS v_earthy
+  INTO dim_counts
+  FROM checkins ch, unnest(ch.tasting_notes) AS note(val)
+  JOIN flavors f ON LOWER(note.val) = LOWER(f.name)
+  WHERE ch.coffee_id = p_coffee_id
+    AND ch.created_at > NOW() - INTERVAL '90 days'
+    AND f.dimension IS NOT NULL;
+
+  v_total := SQRT(
+    dim_counts.v_floral^2    + dim_counts.v_fruity^2    +
+    dim_counts.v_sweet^2     + dim_counts.v_nutty^2     +
+    dim_counts.v_spice^2     + dim_counts.v_roasted^2   +
+    dim_counts.v_fermented^2 + dim_counts.v_earthy^2
+  );
+
+  IF v_total > 0 THEN
+    UPDATE coffees
+    SET flavor_embedding = ARRAY[
+      dim_counts.v_floral    / v_total,
+      dim_counts.v_fruity    / v_total,
+      dim_counts.v_sweet     / v_total,
+      dim_counts.v_nutty     / v_total,
+      dim_counts.v_spice     / v_total,
+      dim_counts.v_roasted   / v_total,
+      dim_counts.v_fermented / v_total,
+      dim_counts.v_earthy    / v_total
+    ]::vector(8)
+    WHERE id = p_coffee_id;
+  END IF;
+END;
+$$;
+
+-- ─── GET RECOMMENDATIONS RPC ──────────────────────────────
+-- Returns top N coffee recommendations for a user.
+-- Scoring: 70% cosine similarity (embedding) + 30% BrewScore.
+-- Falls back to BrewScore-only when embeddings are unavailable.
+-- Includes an explanation string for UI display.
+CREATE OR REPLACE FUNCTION get_recommendations(
+  p_user_id UUID,
+  p_limit   INT DEFAULT 10
+)
+RETURNS TABLE (
+  coffee_id      UUID,
+  name           TEXT,
+  origin_country TEXT,
+  process_method TEXT,
+  roast_level    TEXT,
+  match_score    FLOAT,
+  avg_rating     FLOAT,
+  brew_score     NUMERIC,
+  explanation    TEXT
+)
+LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE
+  v_profile   taste_profiles%ROWTYPE;
+  user_vec    vector(8);
+  v_total     FLOAT;
+  top_dim     TEXT;
+  has_profile BOOLEAN := FALSE;
+BEGIN
+  SELECT * INTO v_profile FROM taste_profiles WHERE user_id = p_user_id;
+
+  IF FOUND THEN
+    v_total := SQRT(
+      COALESCE(v_profile.floral,    0)^2 + COALESCE(v_profile.fruity,    0)^2 +
+      COALESCE(v_profile.sweet,     0)^2 + COALESCE(v_profile.nutty,     0)^2 +
+      COALESCE(v_profile.spice,     0)^2 + COALESCE(v_profile.roasted,   0)^2 +
+      COALESCE(v_profile.fermented, 0)^2 + COALESCE(v_profile.earthy,    0)^2
+    );
+
+    IF v_total > 0 THEN
+      has_profile := TRUE;
+      user_vec := ARRAY[
+        COALESCE(v_profile.floral,    0) / v_total,
+        COALESCE(v_profile.fruity,    0) / v_total,
+        COALESCE(v_profile.sweet,     0) / v_total,
+        COALESCE(v_profile.nutty,     0) / v_total,
+        COALESCE(v_profile.spice,     0) / v_total,
+        COALESCE(v_profile.roasted,   0) / v_total,
+        COALESCE(v_profile.fermented, 0) / v_total,
+        COALESCE(v_profile.earthy,    0) / v_total
+      ]::vector(8);
+
+      -- Find the user's strongest flavor dimension for explanation text
+      SELECT dim INTO top_dim
+      FROM (VALUES
+        ('floral',    COALESCE(v_profile.floral,    0)),
+        ('fruity',    COALESCE(v_profile.fruity,    0)),
+        ('sweet',     COALESCE(v_profile.sweet,     0)),
+        ('nutty',     COALESCE(v_profile.nutty,     0)),
+        ('spice',     COALESCE(v_profile.spice,     0)),
+        ('roasted',   COALESCE(v_profile.roasted,   0)),
+        ('fermented', COALESCE(v_profile.fermented, 0)),
+        ('earthy',    COALESCE(v_profile.earthy,    0))
+      ) AS t(dim, val)
+      ORDER BY val DESC
+      LIMIT 1;
+    END IF;
+  END IF;
+
+  RETURN QUERY
+  SELECT
+    c.id,
+    c.name,
+    c.origin_country,
+    c.process_method,
+    c.roast_level,
+    -- Scoring: embedding similarity (70%) + BrewScore normalised (30%)
+    -- Falls back to BrewScore-only when no embedding or no profile
+    ROUND((
+      CASE
+        WHEN has_profile AND c.flavor_embedding IS NOT NULL
+          THEN (1.0 - (c.flavor_embedding <=> user_vec)) * 70.0
+        ELSE 0.0
+      END
+      + COALESCE(cbs.brew_score, 50.0) / 100.0 * 30.0
+    ))::FLOAT                              AS match_score,
+    COALESCE(cbs.avg_rating, 0)::FLOAT     AS avg_rating,
+    COALESCE(cbs.brew_score, 50)::NUMERIC  AS brew_score,
+    CASE
+      WHEN NOT has_profile OR c.flavor_embedding IS NULL
+        THEN 'Popular among specialty coffee lovers'
+      WHEN (1.0 - (c.flavor_embedding <=> user_vec)) >= 0.85
+        THEN 'Perfect match for your taste profile'
+      WHEN top_dim = 'floral'
+        THEN 'Because you love floral notes'
+      WHEN top_dim = 'fruity'
+        THEN 'Because you love fruity coffees'
+      WHEN top_dim = 'sweet'
+        THEN 'Because you love sweet notes'
+      WHEN top_dim = 'nutty'
+        THEN 'Because you love nutty & chocolatey flavors'
+      WHEN top_dim = 'spice'
+        THEN 'Because you love spicy & complex notes'
+      WHEN top_dim = 'roasted'
+        THEN 'Because you love deep roasted flavors'
+      WHEN top_dim = 'fermented'
+        THEN 'Because you love bold fermented notes'
+      WHEN top_dim = 'earthy'
+        THEN 'Because you love earthy & herbal notes'
+      ELSE 'Matched to your taste profile'
+    END                                    AS explanation
+  FROM coffees c
+  LEFT JOIN coffee_brew_scores cbs ON cbs.id = c.id
+  WHERE c.id NOT IN (
+    SELECT coffee_id FROM checkins WHERE user_id = p_user_id
+  )
+  ORDER BY match_score DESC
+  LIMIT p_limit;
+END;
+$$;
+
+-- ─── RECOMMENDATION LOGS — add insert/update policies ─────
+DROP POLICY IF EXISTS "Users can insert own recommendation logs" ON recommendation_logs;
+DROP POLICY IF EXISTS "Users can update own recommendation logs" ON recommendation_logs;
+CREATE POLICY "Users can insert own recommendation logs"
+  ON recommendation_logs FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own recommendation logs"
+  ON recommendation_logs FOR UPDATE USING (auth.uid() = user_id);

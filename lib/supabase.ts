@@ -79,6 +79,29 @@ export type Database = {
           variety: string | null;
           description: string | null;
           barcode: string | null;
+          flavor_embedding: number[] | null;
+          created_at: string;
+        };
+      };
+      coffee_brew_scores: {
+        Row: {
+          id: string;
+          name: string;
+          origin_country: string | null;
+          process_method: string | null;
+          checkin_count: number;
+          avg_rating: number | null;
+          brew_score: number | null;
+        };
+      };
+      flavors: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string;
+          parent_id: string | null;
+          dimension: string | null;
+          weight: number;
           created_at: string;
         };
       };

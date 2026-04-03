@@ -12,8 +12,8 @@ export const Colors = {
   amber:      '#e09b40',   // secondary warm accent
   gold:       '#f0c060',   // stars, ratings, emphasis
   cream:      '#f5ead8',   // primary text
-  fog:        '#7a6650',   // secondary text
-  mist:       '#4a3a2c',   // disabled / placeholder
+  fog:        '#c0a07a',   // secondary text
+  mist:       '#7a6650',   // disabled / placeholder
   white:      '#fdf9f3',   // pure light
   // Semantic
   hairline:   'rgba(255,255,255,0.055)',

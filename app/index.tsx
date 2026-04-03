@@ -5,16 +5,20 @@ import { useAuthStore } from '../stores/authStore';
 import { Colors } from '../constants/tokens';
 
 export default function Index() {
-  const { user, initialized } = useAuthStore();
+  const { user, initialized, hasTasteProfile } = useAuthStore();
 
   useEffect(() => {
     if (!initialized) return;
     if (user) {
-      router.replace('/(tabs)');
+      if (hasTasteProfile) {
+        router.replace('/(tabs)');
+      } else {
+        router.replace('/taste-quiz');
+      }
     } else {
       router.replace('/onboarding');
     }
-  }, [initialized, user]);
+  }, [initialized, user, hasTasteProfile]);
 
   return <View style={{ flex: 1, backgroundColor: Colors.ink }} />;
 }

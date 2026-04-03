@@ -470,6 +470,41 @@ export default function CoffeeDetailScreen() {
           </Animated.View>
         )}
 
+        {/* ── BrewScore ── */}
+        {count > 0 && (() => {
+          const brewScore = Math.round(
+            (avg / 5) * 0.45 * 100 +
+            Math.min(Math.log(Math.max(count, 1)) / 5, 1) * 0.15 * 100 +
+            (avg / 5) * 0.40 * 100
+          );
+          const scoreColor = brewScore >= 80 ? '#4CAF50' : brewScore >= 60 ? '#FFC107' : '#FF9800';
+          const scoreLabel = brewScore >= 80 ? 'Exceptional' : brewScore >= 60 ? 'Good' : 'Developing';
+          return (
+            <Animated.View entering={FadeInDown.delay(160).duration(400)} style={styles.section}>
+              <Text style={styles.sectionLabel}>BREWSCORE</Text>
+              <View style={styles.brewScoreCard}>
+                <View style={[styles.brewScoreMeter, { borderColor: scoreColor }]}>
+                  <Text style={[styles.brewScoreNum, { color: scoreColor }]}>{brewScore}</Text>
+                  <Text style={styles.brewScoreOf}>/100</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.brewScoreLabel, { color: scoreColor }]}>{scoreLabel}</Text>
+                  <Text style={styles.brewScoreDesc}>
+                    Community score based on {count} check-in{count !== 1 ? 's' : ''}, recency & average rating.
+                  </Text>
+                  {/* Score meter bar */}
+                  <View style={styles.brewScoreTrack}>
+                    <Animated.View
+                      entering={FadeIn.delay(300).duration(600)}
+                      style={[styles.brewScoreFill, { width: `${brewScore}%` as any, backgroundColor: scoreColor }]}
+                    />
+                  </View>
+                </View>
+              </View>
+            </Animated.View>
+          );
+        })()}
+
         {/* ── Rating breakdown ── */}
         {count > 0 && (
           <Animated.View entering={FadeInDown.delay(180).duration(400)} style={styles.section}>
@@ -729,6 +764,24 @@ const styles = StyleSheet.create({
     ...SHADOWS.copper,
   },
   ctaBtnText: { fontFamily: 'Syne-Bold', fontSize: 15, color: Colors.ink },
+
+  // BrewScore
+  brewScoreCard: {
+    flexDirection: 'row', alignItems: 'center', gap: Spacing.lg,
+    backgroundColor: Colors.inkSoft, borderRadius: Radius.xl, padding: Spacing.lg,
+    borderWidth: 1, borderColor: Colors.hairline,
+  },
+  brewScoreMeter: {
+    width: 72, height: 72, borderRadius: 36,
+    borderWidth: 3, alignItems: 'baseline' as any, justifyContent: 'center',
+    flexDirection: 'row', gap: 2,
+  },
+  brewScoreNum: { fontFamily: 'CormorantGaramond-SemiBold', fontSize: 28, lineHeight: 32 },
+  brewScoreOf: { fontFamily: 'SyneMono-Regular', fontSize: 9, color: Colors.fog },
+  brewScoreLabel: { fontFamily: 'Syne-Regular', fontSize: 14, fontWeight: '700' as any, marginBottom: 4 },
+  brewScoreDesc: { fontFamily: 'SyneMono-Regular', fontSize: 8, color: Colors.fog, letterSpacing: 0.5, lineHeight: 13, marginBottom: Spacing.sm },
+  brewScoreTrack: { height: 3, backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 2, overflow: 'hidden' },
+  brewScoreFill: { height: 3, borderRadius: 2 },
 });
 
 // ─── Similar coffee card styles ───────────────────────────────────────────────
