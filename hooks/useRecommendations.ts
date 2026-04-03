@@ -3,8 +3,21 @@ import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../stores/authStore';
 
 // ─── Content-based recommendations ───────────────────────
-// Matches user's taste profile vector against coffee flavor categories
-// Returns top coffees the user hasn't tried yet, sorted by match score
+// Delegates scoring to the get_recommendations() Supabase RPC.
+// Uses pgvector cosine similarity (70%) + BrewScore (30%) server-side,
+// supporting thousands of coffees without client-side computation.
+
+export type Recommendation = {
+  id: string;
+  name: string;
+  origin_country: string | null;
+  process_method: string | null;
+  roast_level: string | null;
+  match_score: number;
+  avg_rating: string | null;
+  brew_score: number | null;
+  explanation: string;
+};
 
 export function useRecommendations(limit = 10) {
   const { user } = useAuthStore();
@@ -13,98 +26,45 @@ export function useRecommendations(limit = 10) {
     queryKey: ['recommendations', user?.id],
     enabled: !!user,
     staleTime: 300_000, // 5 min
-    queryFn: async () => {
+    queryFn: async (): Promise<Recommendation[]> => {
       if (!user) return [];
 
-      // 1. Get user taste profile
-      const { data: profile } = await supabase
-        .from('taste_profiles')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
+      const { data, error } = await supabase.rpc('get_recommendations', {
+        p_user_id: user.id,
+        p_limit: limit,
+      });
 
-      // 2. Get coffees user already checked in
-      const { data: tried } = await supabase
-        .from('checkins')
-        .select('coffee_id')
-        .eq('user_id', user.id);
-      const triedIds = new Set(tried?.map((c: any) => c.coffee_id) ?? []);
+      if (error || !data) return [];
 
-      // 3. Get all coffees with their community tasting notes
-      const { data: coffees } = await supabase
-        .from('coffees')
-        .select(`
-          id, name, origin_country, process_method, roast_level,
-          roasteries:roastery_id ( name, is_verified ),
-          checkins ( rating, tasting_notes )
-        `)
-        .limit(100);
+      const results: Recommendation[] = (data as any[]).map((r) => ({
+        id: r.coffee_id,
+        name: r.name,
+        origin_country: r.origin_country,
+        process_method: r.process_method,
+        roast_level: r.roast_level,
+        match_score: Math.round(r.match_score ?? 0),
+        avg_rating: r.avg_rating > 0 ? parseFloat(r.avg_rating).toFixed(1) : null,
+        brew_score: r.brew_score ? Number(r.brew_score) : null,
+        explanation: r.explanation ?? 'Matched to your taste profile',
+      }));
 
-      if (!coffees) return [];
+      // Log impressions fire-and-forget (no await, non-blocking)
+      void Promise.resolve(
+        supabase
+          .from('recommendation_logs')
+          .insert(
+            results.map((r) => ({
+              user_id: user.id,
+              coffee_id: r.id,
+              score: r.match_score,
+              reason: 'content' as const,
+              shown_at: new Date().toISOString(),
+              clicked: false,
+            }))
+          )
+      ).catch(() => {});
 
-      // 4. Score each coffee against taste profile
-      const FLAVOR_MAP: Record<string, string[]> = {
-        floral:    ['jasmine','rose','chamomile','lavender','orange blossom','floral'],
-        fruity:    ['blueberry','peach','citrus','tropical','strawberry','stone fruit','lemon','lime','fruity'],
-        sweet:     ['caramel','honey','vanilla','brown sugar','nougat','molasses','sweet'],
-        nutty:     ['hazelnut','almond','cocoa','dark choc','peanut','nutty'],
-        spice:     ['bergamot','cinnamon','clove','pepper','anise','spice'],
-        roasted:   ['tobacco','cedar','smoky','burnt','charred','roasted'],
-        fermented: ['winey','whiskey','funky','sour','kombucha','fermented'],
-        earthy:    ['mushroom','wet soil','mossy','herbal','earthy'],
-      };
-
-      const userVector = profile ?? {
-        floral: 0, fruity: 1, sweet: 1, nutty: 0,
-        spice: 0, roasted: 0, fermented: 0, earthy: 0,
-      };
-
-      // Normalize user vector
-      const uvValues = Object.values(userVector).filter(v => typeof v === 'number') as number[];
-      const uvMag = Math.sqrt(uvValues.reduce((a, b) => a + b * b, 0)) || 1;
-
-      const scored = coffees
-        .filter((c: any) => !triedIds.has(c.id))
-        .map((c: any) => {
-          // Build coffee flavor vector from community notes
-          const noteFreq: Record<string, number> = {};
-          for (const ch of c.checkins ?? []) {
-            for (const n of ch.tasting_notes ?? []) {
-              noteFreq[n.toLowerCase()] = (noteFreq[n.toLowerCase()] ?? 0) + 1;
-            }
-          }
-
-          const coffeeVector: Record<string, number> = {};
-          for (const [dim, keys] of Object.entries(FLAVOR_MAP)) {
-            coffeeVector[dim] = keys.reduce((a, k) => a + (noteFreq[k] ?? 0), 0);
-          }
-
-          // Cosine similarity
-          const cvValues = Object.values(coffeeVector) as number[];
-          const cvMag = Math.sqrt(cvValues.reduce((a, b) => a + b * b, 0)) || 1;
-          const dot = Object.keys(FLAVOR_MAP).reduce((a, dim) => {
-            return a + ((userVector as any)[dim] ?? 0) * (coffeeVector[dim] ?? 0);
-          }, 0);
-          const similarity = dot / (uvMag * cvMag);
-
-          // BrewScore bonus
-          const avgRating = c.checkins?.length
-            ? c.checkins.reduce((a: number, b: any) => a + (b.rating ?? 0), 0) / c.checkins.length
-            : 0;
-
-          const matchScore = similarity * 0.7 + (avgRating / 5) * 0.3;
-
-          return {
-            ...c,
-            match_score: Math.round(matchScore * 100),
-            avg_rating: avgRating > 0 ? avgRating.toFixed(1) : null,
-            checkin_count: c.checkins?.length ?? 0,
-          };
-        })
-        .sort((a, b) => b.match_score - a.match_score)
-        .slice(0, limit);
-
-      return scored;
+      return results;
     },
   });
 }
@@ -166,3 +126,4 @@ export function useBrewGuides() {
     },
   });
 }
+

@@ -278,10 +278,206 @@ const pb = StyleSheet.create({
   fill: { height: '100%', borderRadius: Radius.full },
 });
 
+// ─── Phase 1 — quick archetype cards ─────────────────────────────────────────
+// Two fast questions that pre-populate the taste profile, reducing friction
+// before the 8-step detail quiz.
+
+const ARCHETYPES = [
+  {
+    key: 'bright_fruity',
+    label: 'Bright & Fruity',
+    emoji: '🍓',
+    tagline: 'Light, vibrant, complex',
+    accent: '#c87040',
+    from: '#1e0e06',
+    profile: { floral: 0.7, fruity: 0.9, sweet: 0.5, nutty: 0.1, spice: 0.2, roasted: 0.1, fermented: 0.2, earthy: 0.1 },
+  },
+  {
+    key: 'rich_chocolatey',
+    label: 'Rich & Chocolatey',
+    emoji: '🍫',
+    tagline: 'Sweet, warm, comforting',
+    accent: '#b07840',
+    from: '#180e06',
+    profile: { floral: 0.1, fruity: 0.3, sweet: 0.9, nutty: 0.8, spice: 0.3, roasted: 0.5, fermented: 0.1, earthy: 0.2 },
+  },
+  {
+    key: 'bold_smoky',
+    label: 'Bold & Smoky',
+    emoji: '☕',
+    tagline: 'Deep, intense, full-bodied',
+    accent: '#906840',
+    from: '#130e0a',
+    profile: { floral: 0.1, fruity: 0.2, sweet: 0.3, nutty: 0.5, spice: 0.4, roasted: 0.9, fermented: 0.3, earthy: 0.7 },
+  },
+  {
+    key: 'sour_fermented',
+    label: 'Sour & Funky',
+    emoji: '🍷',
+    tagline: 'Adventurous, wine-like',
+    accent: '#8040b0',
+    from: '#130a18',
+    profile: { floral: 0.3, fruity: 0.6, sweet: 0.2, nutty: 0.1, spice: 0.5, roasted: 0.2, fermented: 0.9, earthy: 0.3 },
+  },
+] as const;
+
+type ArchetypeKey = typeof ARCHETYPES[number]['key'];
+
+const ROAST_PREFS = [
+  { key: 'light',  label: 'Light Roast',  emoji: '🌤️', accent: Colors.amber,
+    boost: { floral: 0.2, fruity: 0.2, sweet: 0.1, roasted: -0.1 } },
+  { key: 'medium', label: 'Medium',        emoji: '⛅',  accent: Colors.copper,
+    boost: { sweet: 0.1 } },
+  { key: 'dark',   label: 'Dark Roast',   emoji: '🌑', accent: '#906840',
+    boost: { roasted: 0.2, earthy: 0.1, floral: -0.1, fruity: -0.1 } },
+] as const;
+
+type RoastPrefKey = typeof ROAST_PREFS[number]['key'];
+
+/** Blend archetype profile with roast preference boost and then mix into scores */
+function buildPhase1Profile(
+  archetype: ArchetypeKey,
+  roast: RoastPrefKey,
+): Scores {
+  const base = { ...ARCHETYPES.find(a => a.key === archetype)!.profile };
+  const boost = ROAST_PREFS.find(r => r.key === roast)!.boost as Record<string, number>;
+  const dims: FlavorKey[] = ['floral','fruity','sweet','nutty','spice','roasted','fermented','earthy'];
+  const result: Partial<Scores> = {};
+  for (const dim of dims) {
+    result[dim] = Math.max(0, Math.min(1, (base as any)[dim] + (boost[dim] ?? 0))) as LevelValue;
+  }
+  return result as Scores;
+}
+
+// ─── Archetype picker card ────────────────────────────────
+function ArchetypeCard({
+  selected,
+  roastSelected,
+  onArchetype,
+  onRoast,
+  onNext,
+  onSkip,
+}: {
+  selected: ArchetypeKey | null;
+  roastSelected: RoastPrefKey | null;
+  onArchetype: (k: ArchetypeKey) => void;
+  onRoast: (k: RoastPrefKey) => void;
+  onNext: () => void;
+  onSkip: () => void;
+}) {
+  const firstAccent = selected
+    ? ARCHETYPES.find(a => a.key === selected)!.accent
+    : Colors.copper;
+
+  return (
+    <View style={[ac.container, { backgroundColor: Colors.ink }]}>
+      <StatusBar barStyle="light-content" />
+      <Animated.View entering={FadeIn.duration(400)} style={ac.inner}>
+        <Text style={ac.eyebrow}>TASTE PROFILE · PHASE 1</Text>
+        <Text style={ac.title}>What's your style?</Text>
+
+        <View style={ac.archetypeGrid}>
+          {ARCHETYPES.map((a) => {
+            const active = selected === a.key;
+            return (
+              <TouchableOpacity
+                key={a.key}
+                onPress={() => onArchetype(a.key)}
+                style={[ac.archetypeBtn, { backgroundColor: a.from }, active && { borderColor: a.accent, borderWidth: 2 }]}
+                accessibilityRole="button"
+              >
+                <Text style={ac.archetypeEmoji}>{a.emoji}</Text>
+                <Text style={[ac.archetypeLabel, { color: active ? a.accent : Colors.cream }]}>{a.label}</Text>
+                <Text style={ac.archetypeTagline}>{a.tagline}</Text>
+                {active && <View style={[ac.activeDot, { backgroundColor: a.accent }]} />}
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        <Text style={[ac.subTitle, { color: Colors.fog }]}>Roast preference</Text>
+        <View style={ac.roastRow}>
+          {ROAST_PREFS.map((r) => {
+            const active = roastSelected === r.key;
+            return (
+              <TouchableOpacity
+                key={r.key}
+                onPress={() => onRoast(r.key)}
+                style={[ac.roastBtn, active && { borderColor: r.accent, backgroundColor: `${r.accent}18` }]}
+                accessibilityRole="button"
+              >
+                <Text style={ac.roastEmoji}>{r.emoji}</Text>
+                <Text style={[ac.roastLabel, { color: active ? r.accent : Colors.fog }]}>{r.label}</Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        <View style={ac.footer}>
+          <TouchableOpacity
+            onPress={onNext}
+            disabled={!selected || !roastSelected}
+            style={[ac.nextBtn, { backgroundColor: firstAccent, opacity: (!selected || !roastSelected) ? 0.4 : 1 }]}
+            accessibilityRole="button"
+          >
+            <Text style={ac.nextBtnText}>Refine my taste →</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={onSkip} style={ac.skipBtn} accessibilityRole="button">
+            <Text style={ac.skipText}>SKIP TO HOME</Text>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
+    </View>
+  );
+}
+
+const ac = StyleSheet.create({
+  container: { flex: 1 },
+  inner: {
+    flex: 1,
+    paddingTop: Platform.OS === 'ios' ? 64 : 48,
+    paddingHorizontal: Spacing.xl,
+  },
+  eyebrow: { fontFamily: 'SyneMono-Regular', fontSize: 9, color: Colors.copper, letterSpacing: 3, marginBottom: Spacing.sm },
+  title: { fontFamily: 'CormorantGaramond-LightItalic', fontSize: 40, color: Colors.cream, lineHeight: 44, marginBottom: Spacing.xl },
+  subTitle: { fontFamily: 'SyneMono-Regular', fontSize: 9, letterSpacing: 2, marginBottom: Spacing.md, marginTop: Spacing.lg },
+  archetypeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md },
+  archetypeBtn: {
+    width: (W - Spacing.xl * 2 - Spacing.md) / 2,
+    padding: Spacing.md, borderRadius: Radius.xl,
+    borderWidth: 1, borderColor: Colors.hairline,
+    position: 'relative', overflow: 'hidden',
+  },
+  archetypeEmoji: { fontSize: 28, lineHeight: 34, marginBottom: Spacing.xs },
+  archetypeLabel: { fontFamily: 'Syne-Regular', fontSize: 13, fontWeight: '700' as any, marginBottom: 2 },
+  archetypeTagline: { fontFamily: 'SyneMono-Regular', fontSize: 8, color: Colors.fog, letterSpacing: 0.5 },
+  activeDot: { position: 'absolute', top: 10, right: 10, width: 8, height: 8, borderRadius: 4 },
+  roastRow: { flexDirection: 'row', gap: Spacing.sm },
+  roastBtn: {
+    flex: 1, alignItems: 'center', paddingVertical: Spacing.md, borderRadius: Radius.xl,
+    borderWidth: 1, borderColor: Colors.hairline,
+  },
+  roastEmoji: { fontSize: 20, lineHeight: 24, marginBottom: 4 },
+  roastLabel: { fontFamily: 'SyneMono-Regular', fontSize: 8, letterSpacing: 1, textAlign: 'center' },
+  footer: { marginTop: 'auto' as any, paddingBottom: Platform.OS === 'ios' ? 52 : Spacing.xxl, gap: Spacing.md },
+  nextBtn: {
+    borderRadius: Radius.xxl, paddingVertical: Spacing.lg + 2,
+    alignItems: 'center', justifyContent: 'center',
+    ...SHADOWS.dark,
+  },
+  nextBtnText: { fontFamily: 'Syne-Regular', fontSize: 17, fontWeight: '800' as any, color: Colors.ink },
+  skipBtn: { alignSelf: 'center', paddingVertical: Spacing.sm },
+  skipText: { fontFamily: 'SyneMono-Regular', fontSize: 9, color: Colors.mist, letterSpacing: 2 },
+});
+
 // ─── Main screen ──────────────────────────────────────────────────────────────
 export default function TasteQuizScreen() {
   const { user, setHasTasteProfile } = useAuthStore();
   const { showToast } = useUIStore();
+  // phase: 1 = archetype picker, 2 = 8-step detail sliders
+  const [phase, setPhase] = useState<1 | 2>(1);
+  const [archetype, setArchetype] = useState<ArchetypeKey | null>(null);
+  const [roastPref, setRoastPref] = useState<RoastPrefKey | null>(null);
   const [step, setStep] = useState(0);
   const [scores, setScores] = useState<Scores>({ ...DEFAULT_SCORES });
   const [saving, setSaving] = useState(false);
@@ -289,6 +485,25 @@ export default function TasteQuizScreen() {
 
   const flavor = FLAVORS[step];
   const isLast = step === FLAVORS.length - 1;
+
+  const handlePhase1Next = useCallback(() => {
+    if (!archetype || !roastPref) return;
+    // Pre-populate Phase 2 sliders from archetype + roast preference
+    const presetScores = buildPhase1Profile(archetype, roastPref);
+    const levelValues = LEVELS.map(l => l.value);
+    const rounded: Partial<Scores> = {};
+    for (const [k, v] of Object.entries(presetScores)) {
+      rounded[k as FlavorKey] = levelValues.reduce((prev, curr) =>
+        Math.abs(curr - v) < Math.abs(prev - v) ? curr : prev
+      ) as LevelValue;
+    }
+    setScores(rounded as Scores);
+    setPhase(2);
+  }, [archetype, roastPref]);
+
+  const handleSkip = useCallback(() => {
+    router.replace('/(tabs)');
+  }, []);
 
   const handleSelect = useCallback((value: LevelValue) => {
     setScores((prev) => ({ ...prev, [flavor.key]: value }));
@@ -303,10 +518,6 @@ export default function TasteQuizScreen() {
     return () => {
       if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current);
     };
-  }, []);
-
-  const handleSkip = useCallback(() => {
-    router.replace('/(tabs)');
   }, []);
 
   const handleNext = useCallback(async () => {
@@ -344,6 +555,21 @@ export default function TasteQuizScreen() {
     handleNext();
   };
 
+  // Phase 1 — Archetype picker
+  if (phase === 1) {
+    return (
+      <ArchetypeCard
+        selected={archetype}
+        roastSelected={roastPref}
+        onArchetype={setArchetype}
+        onRoast={setRoastPref}
+        onNext={handlePhase1Next}
+        onSkip={handleSkip}
+      />
+    );
+  }
+
+  // Phase 2 — 8-step flavor detail sliders
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />

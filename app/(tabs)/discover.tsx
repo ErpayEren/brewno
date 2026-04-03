@@ -71,6 +71,10 @@ function CoffeeCard({ item, index }: { item: any; index: number }) {
   const s = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
   const g = HERO_GRADIENTS[index % HERO_GRADIENTS.length];
   const full = Math.floor(parseFloat(item.avg_rating ?? '0'));
+  const brewScore = item.brew_score ?? null;
+  const brewScoreColor = brewScore !== null
+    ? brewScore >= 80 ? '#4CAF50' : brewScore >= 60 ? '#FFC107' : '#FF9800'
+    : Colors.fog;
 
   return (
     <Animated.View
@@ -93,6 +97,13 @@ function CoffeeCard({ item, index }: { item: any; index: number }) {
           {item.process_method && (
             <View style={cc.processTag}>
               <Text style={cc.processText}>{item.process_method.toUpperCase()}</Text>
+            </View>
+          )}
+          {/* BrewScore badge */}
+          {brewScore !== null && (
+            <View style={[cc.brewBadge, { borderColor: brewScoreColor }]}>
+              <Text style={[cc.brewScore, { color: brewScoreColor }]}>{brewScore}</Text>
+              <Text style={cc.brewLabel}>BREW</Text>
             </View>
           )}
         </View>
@@ -133,6 +144,14 @@ const cc = StyleSheet.create({
     borderRadius: Radius.full, borderWidth: 1, borderColor: Colors.hairline,
   },
   processText: { fontFamily: 'SyneMono-Regular', fontSize: 8, color: Colors.fog, letterSpacing: 1 },
+  brewBadge: {
+    position: 'absolute', top: 10, right: 10,
+    backgroundColor: 'rgba(8,6,4,0.80)',
+    paddingHorizontal: 7, paddingVertical: 4,
+    borderRadius: Radius.md, borderWidth: 1, alignItems: 'center',
+  },
+  brewScore: { fontFamily: 'CormorantGaramond-SemiBold', fontSize: 16, lineHeight: 18 },
+  brewLabel: { fontFamily: 'SyneMono-Regular', fontSize: 6, color: Colors.fog, letterSpacing: 1.5 },
   body: { padding: Spacing.md },
   origin: { fontFamily: 'SyneMono-Regular', fontSize: 8, color: Colors.copper, letterSpacing: 1.5, marginBottom: 5 },
   name: { fontFamily: 'CormorantGaramond-Italic', fontSize: 18, color: Colors.cream, lineHeight: 22, marginBottom: 6 },

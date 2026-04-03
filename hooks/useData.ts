@@ -88,8 +88,7 @@ export function useCoffees(query: string = '', filters: Record<string, string> =
           id, name, origin_country, origin_region, process_method, roast_level, altitude_masl, variety,
           roasteries:roastery_id ( name, is_verified ),
           checkins ( id, rating )
-        `)
-        .order('name');
+        `);
 
       if (query) {
         q = q.or(`name.ilike.%${query}%,origin_country.ilike.%${query}%,origin_region.ilike.%${query}%`);
@@ -107,13 +106,27 @@ export function useCoffees(query: string = '', filters: Record<string, string> =
       const { data, error } = await q.limit(50);
       if (error) throw error;
 
-      return (data ?? []).map((c: any) => ({
-        ...c,
-        checkin_count: c.checkins?.length ?? 0,
-        avg_rating: c.checkins?.length
-          ? (c.checkins.reduce((a: number, b: any) => a + (b.rating ?? 0), 0) / c.checkins.length).toFixed(1)
-          : null,
-      }));
+      return (data ?? [])
+        .map((c: any) => {
+          const checkinCount = c.checkins?.length ?? 0;
+          const avgRating = checkinCount
+            ? c.checkins.reduce((a: number, b: any) => a + (b.rating ?? 0), 0) / checkinCount
+            : 0;
+          // Approximate BrewScore from available data (mirrors materialized view formula)
+          const brewScore = Math.round(
+            (avgRating / 5) * 0.45 * 100 +
+            Math.min(Math.log(Math.max(checkinCount, 1)) / 5, 1) * 0.15 * 100 +
+            (avgRating / 5) * 0.40 * 100
+          );
+          return {
+            ...c,
+            checkin_count: checkinCount,
+            avg_rating: checkinCount ? avgRating.toFixed(1) : null,
+            brew_score: checkinCount ? brewScore : null,
+          };
+        })
+        // Sort by brew_score descending so highest-rated coffees appear first
+        .sort((a: any, b: any) => (b.brew_score ?? 0) - (a.brew_score ?? 0));
     },
     staleTime: 60_000,
   });
@@ -341,5 +354,19 @@ async function checkAndAwardBadges(userId: string) {
         toAward.map(badge_id => ({ user_id: userId, badge_id }))
       );
     }
+  } catch { /* non-blocking */ }
+}
+
+// ─── Recommendation click tracking ────────────────────────────────────────────
+// Call when user navigates to a coffee that was shown as a recommendation.
+// Marks the most recent unclicked log entry for that user+coffee pair.
+export async function logRecommendationClick(userId: string, coffeeId: string) {
+  try {
+    await supabase
+      .from('recommendation_logs')
+      .update({ clicked: true })
+      .eq('user_id', userId)
+      .eq('coffee_id', coffeeId)
+      .eq('clicked', false);
   } catch { /* non-blocking */ }
 }

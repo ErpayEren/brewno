@@ -10,7 +10,7 @@ import Animated, {
   useAnimatedRef, scrollTo, Extrapolation,
 } from 'react-native-reanimated';
 import { router } from 'expo-router';
-import { useFeed, useLike } from '../../hooks/useData';
+import { useFeed, useLike, logRecommendationClick } from '../../hooks/useData';
 import { useRecommendations, useTrending } from '../../hooks/useRecommendations';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
@@ -322,8 +322,8 @@ const cs = StyleSheet.create({
 
 // ─── Header Component ─────────────────────────────────────────────────────────
 function FeedHeader({
-  active, onFilter, profile, recommendations, trending,
-}: { active: string; onFilter: (f: string) => void; profile: any; recommendations?: any[]; trending?: any[] }) {
+  active, onFilter, profile, recommendations, trending, userId,
+}: { active: string; onFilter: (f: string) => void; profile: any; recommendations?: any[]; trending?: any[]; userId?: string }) {
   const FILTERS = ['All', 'Following', 'Nearby'];
 
   return (
@@ -406,7 +406,10 @@ function FeedHeader({
               const g = HERO_GRADIENTS[index % HERO_GRADIENTS.length];
               return (
                 <TouchableOpacity
-                  onPress={() => router.push(`/coffee/${item.id}` as any)}
+                  onPress={() => {
+                    if (userId) logRecommendationClick(userId, item.id).catch(() => {});
+                    router.push(`/coffee/${item.id}` as any);
+                  }}
                   style={[rw.card, { backgroundColor: g.from }]}
                   accessibilityRole="button"
                 >
@@ -417,6 +420,11 @@ function FeedHeader({
                   <View style={rw.bottom}>
                     <Text style={rw.origin} numberOfLines={1}>{item.origin_country?.toUpperCase()}</Text>
                     <Text style={rw.name} numberOfLines={2}>{item.name}</Text>
+                    {!!item.explanation && (
+                      <View style={rw.explanationRow}>
+                        <Text style={rw.explanationText} numberOfLines={2}>✦ {item.explanation}</Text>
+                      </View>
+                    )}
                   </View>
                 </TouchableOpacity>
               );
@@ -469,7 +477,7 @@ function FeedHeader({
 }
 
 const rw = StyleSheet.create({
-  card: { width: 130, height: 160, borderRadius: Radius.xl, overflow: 'hidden', borderWidth: 1, borderColor: Colors.hairline },
+  card: { width: 150, height: 190, borderRadius: Radius.xl, overflow: 'hidden', borderWidth: 1, borderColor: Colors.hairline },
   matchBadge: { position: 'absolute', top: 10, right: 10, backgroundColor: Colors.copper, borderRadius: Radius.full, paddingHorizontal: 7, paddingVertical: 3 },
   matchText: { fontFamily: 'SyneMono-Regular', fontSize: 9, color: Colors.ink, fontWeight: '700' as any },
   trendBadge: { position: 'absolute', top: 10, right: 10, backgroundColor: 'rgba(8,6,4,0.72)', borderRadius: Radius.full, paddingHorizontal: 7, paddingVertical: 3, borderWidth: 1, borderColor: Colors.hairline },
@@ -477,6 +485,8 @@ const rw = StyleSheet.create({
   bottom: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: Spacing.sm },
   origin: { fontFamily: 'SyneMono-Regular', fontSize: 7, color: Colors.copper, letterSpacing: 1.5, marginBottom: 3 },
   name: { fontFamily: 'CormorantGaramond-Italic', fontSize: 14, color: Colors.cream, lineHeight: 17 },
+  explanationRow: { marginTop: 5, paddingTop: 4, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.08)' },
+  explanationText: { fontFamily: 'SyneMono-Regular', fontSize: 7, color: Colors.amber, letterSpacing: 0.3, lineHeight: 11 },
 });
 const hs = StyleSheet.create({
   wrap: {
@@ -554,7 +564,7 @@ export default function FeedScreen() {
         renderItem={renderCard}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={
-          <FeedHeader active={filter} onFilter={setFilter} profile={profile} recommendations={recommendations} trending={trending} />
+          <FeedHeader active={filter} onFilter={setFilter} profile={profile} recommendations={recommendations} trending={trending} userId={user?.id} />
         }
         ListEmptyComponent={
           isLoading
