@@ -20,15 +20,15 @@ const { width: W } = Dimensions.get('window');
 const CARD_W = (W - Spacing.lg * 2 - Spacing.md) / 2;
 
 const GROUPS = {
-  Process: ['All', 'Washed', 'Natural', 'Honey', 'Anaerobic'],
-  Roast:   ['All', 'Light', 'Medium-Light', 'Medium', 'Dark'],
-  Origin:  ['All', 'Ethiopia', 'Kenya', 'Colombia', 'Panama', 'Yemen'],
+  Proses: ['Tümü', 'Washed', 'Natural', 'Honey', 'Anaerobic'],
+  Kavrum:   ['Tümü', 'Açık', 'Orta-Açık', 'Orta', 'Koyu'],
+  Menşei:  ['Tümü', 'Ethiopia', 'Kenya', 'Colombia', 'Panama', 'Yemen'],
 } as const;
 type GroupKey = keyof typeof GROUPS;
-const SORTS = ['BrewScore', 'Rating', 'Name'] as const;
-type SortKey = (typeof SORTS)[number];
+const SIRALAMAS = ['BrewSkor', 'Puan', 'İsim'] as const;
+type SortKey = (typeof SIRALAMAS)[number];
 
-type DiscoverCoffee = {
+type KeşfetCoffee = {
   id: string;
   name?: string | null;
   avg_rating?: string | null;
@@ -48,13 +48,13 @@ function SearchBar({ value, onChange }: { value: string; onChange: (v: string) =
       <Text style={{ fontSize: 15, color: Colors.copper }}>⊙</Text>
       <TextInput
         style={sb.input}
-        placeholder="Origin, variety, roastery..."
+        placeholder="Menşei, varyete, kavurucu..."
         placeholderTextColor={Colors.fog}
         value={value}
         onChangeText={onChange}
         onFocus={() => { setFocused(true); borderAnim.value = withTiming(1, { duration: 200 }); }}
         onBlur={() => { setFocused(false); borderAnim.value = withTiming(0, { duration: 200 }); }}
-        accessibilityLabel="Search coffees"
+        accessibilityLabel="Kahve ara"
       />
       {value.length > 0 && (
         <TouchableOpacity onPress={() => onChange('')} style={sb.clear}>
@@ -103,13 +103,13 @@ function CoffeeCard({ item, index }: { item: any; index: number }) {
           <View style={[StyleSheet.absoluteFillObject, { backgroundColor: g.mid, opacity: 0.7, transform: [{ skewY: '-12deg' }, { translateY: 40 }] }]} />
           <View style={[StyleSheet.absoluteFillObject, { backgroundColor: g.to, opacity: 0.3, borderRadius: CARD_W, transform: [{ scale: 1.8 }, { translateX: CARD_W * 0.3 }, { translateY: -80 }] }]} />
           <Text style={{ position: 'absolute', fontSize: 52, opacity: 0.12, bottom: -4, right: -4, lineHeight: 58 }}>☕</Text>
-          {/* Process tag */}
+          {/* Proses tag */}
           {item.process_method && (
             <View style={cc.processTag}>
               <Text style={cc.processText}>{item.process_method.toUpperCase()}</Text>
             </View>
           )}
-          {/* BrewScore badge */}
+          {/* BrewSkor badge */}
           {brewScore !== null && (
             <View style={[cc.brewBadge, { borderColor: brewScoreColor }]}>
               <Text style={[cc.brewScore, { color: brewScoreColor }]}>{brewScore}</Text>
@@ -123,14 +123,14 @@ function CoffeeCard({ item, index }: { item: any; index: number }) {
             {[item.origin_country, item.origin_region].filter(Boolean).join(' ·  ').toUpperCase()}
           </Text>
           <Text style={cc.name} numberOfLines={2}>{item.name}</Text>
-          {/* Rating */}
+          {/* Puan */}
           {item.avg_rating && (
             <View style={cc.ratingRow}>
               <Text style={cc.ratingNum}>{parseFloat(item.avg_rating).toFixed(1)}</Text>
               <Text style={cc.stars}>{'★'.repeat(full)}{'☆'.repeat(5-full)}</Text>
             </View>
           )}
-          {/* Roastery */}
+          {/* Kavrumery */}
           {item.roasteries?.name && (
             <Text style={cc.roastery} numberOfLines={1}>
               {item.roasteries.name}{item.roasteries.is_verified ? ' ✦' : ''}
@@ -172,13 +172,13 @@ const cc = StyleSheet.create({
 });
 
 // ─── Featured row (horizontal scroll) ────────────────────────────────────────
-function FeaturedRoastRow({ coffees }: { coffees: any[] }) {
+function FeaturedKavrumRow({ coffees }: { coffees: any[] }) {
   if (!coffees || coffees.length === 0) return null;
   return (
     <View style={{ marginBottom: Spacing.xxl }}>
       <View style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: Spacing.md }}>
-        <Text style={{ fontFamily: 'CormorantGaramond-LightItalic', fontSize: 22, color: Colors.cream, lineHeight: 26 }}>Exceptional Origins</Text>
-        <TouchableOpacity><Text style={{ fontFamily: 'SyneMono-Regular', fontSize: 9, color: Colors.copper, letterSpacing: 1 }}>SEE ALL</Text></TouchableOpacity>
+        <Text style={{ fontFamily: 'CormorantGaramond-LightItalic', fontSize: 22, color: Colors.cream, lineHeight: 26 }}>Öne Çıkan Menşeiler</Text>
+        <TouchableOpacity><Text style={{ fontFamily: 'SyneMono-Regular', fontSize: 9, color: Colors.copper, letterSpacing: 1 }}>TÜMÜNÜ GÖR</Text></TouchableOpacity>
       </View>
       <FlatList
         horizontal
@@ -212,19 +212,19 @@ const fr = StyleSheet.create({
 });
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-export default function DiscoverScreen() {
+export default function KeşfetScreen() {
   const [query, setQuery] = useState('');
-  const [group, setGroup] = useState<GroupKey>('Process');
-  const [filters, setFilters] = useState<Record<GroupKey, string>>({ Process:'All', Roast:'All', Origin:'All' });
-  const [sortBy, setSortBy] = useState<SortKey>('BrewScore');
+  const [group, setGroup] = useState<GroupKey>('Proses');
+  const [filters, setFilters] = useState<Record<GroupKey, string>>({ Proses:'Tümü', Kavrum:'Tümü', Menşei:'Tümü' });
+  const [sortBy, setSortBy] = useState<SortKey>('BrewSkor');
 
   const { data, isLoading, isError, error, refetch } = useCoffees(query, filters);
   const sortedData = React.useMemo(() => {
-    const list = [...((data ?? []) as DiscoverCoffee[])];
-    if (sortBy === 'Rating') {
+    const list = [...((data ?? []) as KeşfetCoffee[])];
+    if (sortBy === 'Puan') {
       return list.sort((a, b) => parseFloat(b.avg_rating ?? '0') - parseFloat(a.avg_rating ?? '0'));
     }
-    if (sortBy === 'Name') {
+    if (sortBy === 'İsim') {
       return list.sort((a, b) => String(a.name ?? '').localeCompare(String(b.name ?? '')));
     }
     return list.sort((a, b) => (b.brew_score ?? 0) - (a.brew_score ?? 0));
@@ -238,9 +238,9 @@ export default function DiscoverScreen() {
     <View>
       {/* Title block */}
       <Animated.View entering={FadeIn.duration(500)} style={ds.titleBlock}>
-        <Text style={ds.eyebrow}>SPECIALTY COFFEE</Text>
-        <Text style={ds.title}>Discover</Text>
-        <Text style={ds.subtitle}>Curated origins, processes & roasters.</Text>
+        <Text style={ds.eyebrow}>SPECIALTY KAHVE</Text>
+        <Text style={ds.title}>Keşfet</Text>
+        <Text style={ds.subtitle}>Özenle seçilmiş menşei, proses ve kavurucular.</Text>
       </Animated.View>
 
       <Animated.View entering={FadeInDown.delay(80).duration(400)}>
@@ -250,7 +250,7 @@ export default function DiscoverScreen() {
       {/* Featured horizontal */}
       {!isLoading && data && data.length > 0 && (
         <Animated.View entering={FadeInDown.delay(120).duration(400)}>
-          <FeaturedRoastRow coffees={data.filter((c: any) => c.avg_rating && parseFloat(c.avg_rating) >= 4)} />
+          <FeaturedKavrumRow coffees={data.filter((c: any) => c.avg_rating && parseFloat(c.avg_rating) >= 4)} />
         </Animated.View>
       )}
 
@@ -290,10 +290,10 @@ export default function DiscoverScreen() {
       </Animated.View>
 
       <Animated.View entering={FadeInDown.delay(220).duration(400)} style={ds.sortRow}>
-        {SORTS.map((sort) => {
+        {SIRALAMAS.map((sort) => {
           const active = sortBy === sort;
           return (
-            <TouchableOpacity key={sort} onPress={() => setSortBy(sort)} style={[ds.sortChip, active && ds.sortChipActive]} accessibilityRole="button" accessibilityLabel={`Sort by ${sort}`}>
+            <TouchableOpacity key={sort} onPress={() => setSortBy(sort)} style={[ds.sortChip, active && ds.sortChipActive]} accessibilityRole="button" accessibilityLabel={`Şuna göre sırala ${sort}`}>
               <Text style={[ds.sortChipText, active && ds.sortChipTextActive]}>{sort}</Text>
             </TouchableOpacity>
           );
@@ -301,7 +301,7 @@ export default function DiscoverScreen() {
       </Animated.View>
 
       {/* Count */}
-      <Text style={ds.count}>{sortedData.length} COFFEES · {query ? 'FILTERED' : 'ALL ORIGINS'} · SORT {sortBy.toUpperCase()}</Text>
+      <Text style={ds.count}>{sortedData.length} KAHVE · {query ? 'FİLTRELENEN' : 'TÜM MENŞEİLER'} · SIRALAMA {sortBy.toUpperCase()}</Text>
     </View>
   );
 
@@ -325,7 +325,7 @@ export default function DiscoverScreen() {
             )
             : isError
             ? <ErrorState message={(error as Error)?.message} onRetry={refetch} />
-            : <EmptyState emoji="🔍" title="Nothing matches." subtitle="Try a different origin or process filter." />
+            : <EmptyState emoji="🔍" title="Eşleşen sonuç yok." subtitle="Farklı bir menşei veya proses filtresi dene." />
         }
         columnWrapperStyle={{ gap: Spacing.md, marginBottom: Spacing.md }}
         contentContainerStyle={{ paddingHorizontal: Spacing.lg, paddingBottom: 120 }}

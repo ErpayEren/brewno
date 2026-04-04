@@ -321,18 +321,18 @@ export default function CoffeeDetailScreen() {
   }));
 
   const handleWishlist = useCallback(() => {
-    if (!user) { showToast({ type: 'info', title: 'Sign in to save coffees.' }); return; }
+    if (!user) { showToast({ type: 'info', title: 'Kahve kaydetmek için giriş yap.' }); return; }
     haptics.heavy();
     wishScale.value = withSequence(withSpring(1.4, SPRING_SNAPPY), withSpring(1.0, SPRING));
     wishlistMutation.mutate(
       { coffeeId: id!, inWishlist: !!inWishlist },
-      { onSuccess: () => { refetchWishlist(); showToast({ type: 'success', title: inWishlist ? 'Removed from wishlist.' : 'Saved to wishlist.' }); } }
+      { onSuccess: () => { refetchWishlist(); showToast({ type: 'success', title: inWishlist ? 'İstek listesinden kaldırıldı.' : 'İstek listesine kaydedildi.' }); } }
     );
   }, [user, inWishlist, id]);
 
   const handleShare = useCallback(async () => {
     if (!coffee) return;
-    await Share.share({ message: `Check out ${coffee.name} on Brewno — ${coffee.origin_country ?? ''}` });
+    await Share.share({ message: `Şuna göz at: ${coffee.name} Brewno’da — ${coffee.origin_country ?? ''}` });
   }, [coffee]);
 
   const handleCheckin = useCallback(() => {
@@ -343,9 +343,9 @@ export default function CoffeeDetailScreen() {
   if (isError || !coffee) {
     return (
       <View style={{ flex: 1, backgroundColor: Colors.ink, alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ fontFamily: 'CormorantGaramond-LightItalic', fontSize: 28, color: Colors.cream }}>Coffee not found.</Text>
+        <Text style={{ fontFamily: 'CormorantGaramond-LightItalic', fontSize: 28, color: Colors.cream }}>Kahve bulunamadı.</Text>
         <TouchableOpacity onPress={() => router.back()} style={{ marginTop: Spacing.xl }}>
-          <Text style={{ fontFamily: 'SyneMono-Regular', fontSize: 11, color: Colors.copper, letterSpacing: 2 }}>← GO BACK</Text>
+          <Text style={{ fontFamily: 'SyneMono-Regular', fontSize: 11, color: Colors.copper, letterSpacing: 2 }}>← GERİ DÖN</Text>
         </TouchableOpacity>
       </View>
     );
@@ -359,11 +359,11 @@ export default function CoffeeDetailScreen() {
 
   // Derive flavor profile scores from community tasting notes
   const FLAVOR_CATS: { label: string; keys: string[]; color: string }[] = [
-    { label: 'Floral',   keys: ['jasmine','rose','chamomile','lavender','floral'],   color: Colors.gold },
-    { label: 'Fruity',   keys: ['blueberry','peach','citrus','tropical','strawberry','stone fruit','fruity'], color: Colors.amber },
-    { label: 'Sweet',    keys: ['caramel','honey','vanilla','brown sugar','nougat','sweet'], color: Colors.copper },
-    { label: 'Nutty',    keys: ['hazelnut','almond','cocoa','dark choc','nutty'],    color: '#a07840' },
-    { label: 'Roasted',  keys: ['tobacco','cedar','smoky','burnt','roasted'],        color: Colors.fog },
+    { label: 'Çiçeksi',   keys: ['jasmine','rose','chamomile','lavender','floral'],   color: Colors.gold },
+    { label: 'Meyvemsi',   keys: ['blueberry','peach','citrus','tropical','strawberry','stone fruit','fruity'], color: Colors.amber },
+    { label: 'Tatlı',    keys: ['caramel','honey','vanilla','brown sugar','nougat','sweet'], color: Colors.copper },
+    { label: 'Kuruyemişimsi',    keys: ['hazelnut','almond','cocoa','dark choc','nutty'],    color: '#a07840' },
+    { label: 'Kavrulmuş',  keys: ['tobacco','cedar','smoky','burnt','roasted'],        color: Colors.fog },
   ];
   const noteFreq: Record<string, number> = {};
   for (const c of checkins) for (const n of c.tasting_notes ?? []) noteFreq[n.toLowerCase()] = (noteFreq[n.toLowerCase()] ?? 0) + 1;
@@ -388,7 +388,7 @@ export default function CoffeeDetailScreen() {
       {/* Floating header bar */}
       <View style={styles.floatingHeader} pointerEvents="box-none">
         <Animated.View style={[StyleSheet.absoluteFillObject, styles.floatingHeaderBg, headerBgStyle]} />
-        <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel="Go back">
+        <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel="Geri dön">
           <Text style={styles.headerBtnText}>‹</Text>
         </TouchableOpacity>
         <Animated.Text
@@ -400,11 +400,11 @@ export default function CoffeeDetailScreen() {
           {coffee.name}
         </Animated.Text>
         <View style={{ flexDirection: 'row', gap: Spacing.sm }}>
-          <TouchableOpacity onPress={handleShare} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel="Share">
+          <TouchableOpacity onPress={handleShare} style={styles.headerBtn} accessibilityRole="button" accessibilityLabel="Paylaş">
             <Text style={{ fontSize: 15, color: Colors.cream }}>↑</Text>
           </TouchableOpacity>
           <Animated.View style={{ transform: [{ scale: wishScale }] }}>
-            <TouchableOpacity onPress={handleWishlist} style={[styles.headerBtn, inWishlist && styles.headerBtnActive]} accessibilityRole="button" accessibilityLabel={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}>
+            <TouchableOpacity onPress={handleWishlist} style={[styles.headerBtn, inWishlist && styles.headerBtnActive]} accessibilityRole="button" accessibilityLabel={inWishlist ? 'İstek listesinden kaldır' : 'İstek listesine ekle'}>
               <Text style={{ fontSize: 16, color: inWishlist ? Colors.copper : Colors.cream }}>
                 {inWishlist ? '♥' : '♡'}
               </Text>
@@ -465,7 +465,7 @@ export default function CoffeeDetailScreen() {
         {/* ── Description ── */}
         {coffee.description && (
           <Animated.View entering={FadeInDown.delay(140).duration(400)} style={styles.section}>
-            <Text style={styles.sectionLabel}>ABOUT</Text>
+            <Text style={styles.sectionLabel}>HAKKINDA</Text>
             <Text style={styles.description}>{coffee.description}</Text>
           </Animated.View>
         )}
@@ -478,10 +478,10 @@ export default function CoffeeDetailScreen() {
             (avg / 5) * 0.40 * 100
           );
           const scoreColor = brewScore >= 80 ? '#4CAF50' : brewScore >= 60 ? '#FFC107' : '#FF9800';
-          const scoreLabel = brewScore >= 80 ? 'Exceptional' : brewScore >= 60 ? 'Good' : 'Developing';
+          const scoreLabel = brewScore >= 80 ? 'Olağanüstü' : brewScore >= 60 ? 'İyi' : 'Gelişiyor';
           return (
             <Animated.View entering={FadeInDown.delay(160).duration(400)} style={styles.section}>
-              <Text style={styles.sectionLabel}>BREWSCORE</Text>
+              <Text style={styles.sectionLabel}>BREWSKOR</Text>
               <View style={styles.brewScoreCard}>
                 <View style={[styles.brewScoreMeter, { borderColor: scoreColor }]}>
                   <Text style={[styles.brewScoreNum, { color: scoreColor }]}>{brewScore}</Text>
@@ -490,7 +490,7 @@ export default function CoffeeDetailScreen() {
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.brewScoreLabel, { color: scoreColor }]}>{scoreLabel}</Text>
                   <Text style={styles.brewScoreDesc}>
-                    Community score based on {count} check-in{count !== 1 ? 's' : ''}, recency & average rating.
+                    Topluluk skoru: {count} check-in{count !== 1 ? 's' : ''}, güncellik ve ortalama puana göre.
                   </Text>
                   {/* Score meter bar */}
                   <View style={styles.brewScoreTrack}>
@@ -508,7 +508,7 @@ export default function CoffeeDetailScreen() {
         {/* ── Rating breakdown ── */}
         {count > 0 && (
           <Animated.View entering={FadeInDown.delay(180).duration(400)} style={styles.section}>
-            <Text style={styles.sectionLabel}>RATINGS</Text>
+            <Text style={styles.sectionLabel}>PUANLAR</Text>
             <View style={styles.ratingCard}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.xl, marginBottom: Spacing.lg }}>
                 <View style={{ alignItems: 'center' }}>
@@ -518,7 +518,7 @@ export default function CoffeeDetailScreen() {
                       <Text key={i} style={{ fontSize: 11, color: i <= Math.round(avg) ? Colors.gold : Colors.mist }}>★</Text>
                     ))}
                   </View>
-                  <Text style={styles.ratingCountSm}>{count} ratings</Text>
+                  <Text style={styles.ratingCountSm}>{count} puan</Text>
                 </View>
                 <View style={{ flex: 1 }}>
                   <RatingDist dist={dist} total={count} />
@@ -531,7 +531,7 @@ export default function CoffeeDetailScreen() {
         {/* ── Community tasting notes ── */}
         {topNotes.length > 0 && (
           <Animated.View entering={FadeInDown.delay(220).duration(400)} style={styles.section}>
-            <Text style={styles.sectionLabel}>COMMUNITY NOTES</Text>
+            <Text style={styles.sectionLabel}>TOPLULUK NOTLARI</Text>
             <View style={styles.notesWrap}>
               {topNotes.map((n, i) => <NoteChip key={n} label={n} rank={i} />)}
             </View>
@@ -541,7 +541,7 @@ export default function CoffeeDetailScreen() {
         {/* ── Flavor profile (from community data) ── */}
         {flavorBars.length > 0 && (
           <Animated.View entering={FadeInDown.delay(260).duration(400)} style={styles.section}>
-            <Text style={styles.sectionLabel}>FLAVOR PROFILE</Text>
+            <Text style={styles.sectionLabel}>LEZZET PROFİLİ</Text>
             <View style={styles.flavorCard}>
               {flavorBars.map((b, i) => (
                 <FlavorBar key={b.label} label={b.label} pct={b.pct} color={b.color} delay={i * 80} />
@@ -553,7 +553,7 @@ export default function CoffeeDetailScreen() {
         {/* ── Roastery card ── */}
         {roastery && (
           <Animated.View entering={FadeInDown.delay(300).duration(400)} style={styles.section}>
-            <Text style={styles.sectionLabel}>ROASTERY</Text>
+            <Text style={styles.sectionLabel}>KAVURUCU</Text>
             <View style={styles.roasteryCard}>
               <View style={styles.roasteryAvatar}>
                 <Text style={{ fontFamily: 'CormorantGaramond-SemiBold', fontSize: 22, color: Colors.cream }}>
@@ -565,7 +565,7 @@ export default function CoffeeDetailScreen() {
                   <Text style={styles.roasteryCardName}>{roastery.name}</Text>
                   {roastery.is_verified && (
                     <View style={styles.verifiedBadge}>
-                      <Text style={{ fontFamily: 'SyneMono-Regular', fontSize: 8, color: Colors.copper, letterSpacing: 1 }}>VERIFIED</Text>
+                      <Text style={{ fontFamily: 'SyneMono-Regular', fontSize: 8, color: Colors.copper, letterSpacing: 1 }}>DOĞRULANDI</Text>
                     </View>
                   )}
                 </View>
@@ -580,7 +580,7 @@ export default function CoffeeDetailScreen() {
         {/* ── Similar Coffees ── */}
         {similarCoffees && similarCoffees.length > 0 && (
           <Animated.View entering={FadeInDown.delay(320).duration(400)} style={styles.section}>
-            <Text style={styles.sectionLabel}>YOU MIGHT ALSO LIKE</Text>
+            <Text style={styles.sectionLabel}>BUNLARI DA BEĞENEBİLİRSİN</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: Spacing.md }}>
               {similarCoffees.map((sc: any, i: number) => {
                 const g = HERO_GRADIENTS[(gi + i + 1) % HERO_GRADIENTS.length];
@@ -610,13 +610,13 @@ export default function CoffeeDetailScreen() {
           </Animated.View>
         )}
 
-        {/* ── Community check-ins ── */}
+        {/* ── Community check-in ── */}
         {checkins.length > 0 && (
           <Animated.View entering={FadeInDown.delay(340).duration(400)} style={styles.section}>
             <View style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: Spacing.md }}>
-              <Text style={styles.sectionLabel}>COMMUNITY</Text>
+              <Text style={styles.sectionLabel}>TOPLULUK</Text>
               <Text style={{ fontFamily: 'SyneMono-Regular', fontSize: 9, color: Colors.copper, letterSpacing: 1 }}>
-                {count} POURS
+                {count} DÖKÜMLER
               </Text>
             </View>
             {checkins.slice(0, 6).map((c: any, i: number) => (
@@ -629,10 +629,10 @@ export default function CoffeeDetailScreen() {
           <Animated.View entering={FadeInDown.delay(300).duration(400)} style={[styles.section, { alignItems: 'center', paddingVertical: Spacing.xxxl }]}>
             <Text style={{ fontSize: 40, marginBottom: Spacing.lg }}>☕</Text>
             <Text style={{ fontFamily: 'CormorantGaramond-LightItalic', fontSize: 22, color: Colors.cream, textAlign: 'center', marginBottom: Spacing.sm }}>
-              Be the first to pour.
+              İlk check-in yapan sen ol.
             </Text>
             <Text style={{ fontFamily: 'Syne-Regular', fontSize: 13, color: Colors.fog, textAlign: 'center' }}>
-              No check-ins yet. Share your experience.
+              Henüz check-in yok. Deneyimini paylaş.
             </Text>
           </Animated.View>
         )}
@@ -644,9 +644,9 @@ export default function CoffeeDetailScreen() {
           onPress={handleCheckin}
           style={styles.ctaBtn}
           accessibilityRole="button"
-          accessibilityLabel="Check in this coffee"
+          accessibilityLabel="Bu kahveyi check-in yap"
         >
-          <Text style={styles.ctaBtnText}>Check In This Coffee</Text>
+          <Text style={styles.ctaBtnText}>Bu Kahveyi Check-in Yap</Text>
           <Text style={{ fontSize: 18, color: Colors.ink }}>+</Text>
         </TouchableOpacity>
       </View>

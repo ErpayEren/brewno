@@ -94,11 +94,11 @@ export default function LoginScreen() {
 
   const handleSubmit = async () => {
     if (!email || !password) {
-      showToast({ type: 'error', title: 'Missing fields', subtitle: 'Email and password are required.' });
+      showToast({ type: 'error', title: 'Eksik alanlar', subtitle: 'E-posta ve şifre gerekli.' });
       return;
     }
     if (mode === 'signup' && (!username || !fullName)) {
-      showToast({ type: 'error', title: 'Missing fields', subtitle: 'Username and name are required.' });
+      showToast({ type: 'error', title: 'Eksik alanlar', subtitle: 'Kullanıcı adı ve isim gerekli.' });
       return;
     }
 
@@ -107,16 +107,16 @@ export default function LoginScreen() {
     if (mode === 'login') {
       const { error } = await signInWithEmail(email, password);
       if (error) {
-        showToast({ type: 'error', title: 'Sign in failed', subtitle: error });
+        showToast({ type: 'error', title: 'Giriş başarısız', subtitle: error });
       } else {
         router.replace('/(tabs)' as any);
       }
     } else {
       const { error } = await signUpWithEmail(email, password, username, fullName);
       if (error) {
-        showToast({ type: 'error', title: 'Sign up failed', subtitle: error });
+        showToast({ type: 'error', title: 'Kayıt başarısız', subtitle: error });
       } else {
-        showToast({ type: 'success', title: 'Welcome to Brewno.' });
+        showToast({ type: 'success', title: 'Brewnoya hoş geldin.' });
         router.replace('/(tabs)' as any);
       }
     }
@@ -151,7 +151,7 @@ export default function LoginScreen() {
         <Animated.View entering={FadeIn.duration(600)} style={styles.logoBlock}>
           <Text style={styles.logo}>brewno.</Text>
           <View style={styles.copperLine} />
-          <Text style={styles.tagline}>your coffee memory</Text>
+          <Text style={styles.tagline}>kahve hafızan</Text>
         </Animated.View>
 
         {/* Mode toggle */}
@@ -169,7 +169,7 @@ export default function LoginScreen() {
               >
                 {isActive && <View style={styles.toggleGlow} />}
                 <Text style={[styles.toggleText, isActive && styles.toggleTextActive]}>
-                  {m === 'login' ? 'Sign In' : 'Create Account'}
+                  {m === 'login' ? 'Giriş Yap' : 'Hesap Oluştur'}
                 </Text>
               </TouchableOpacity>
             );
@@ -180,12 +180,12 @@ export default function LoginScreen() {
         <Animated.View entering={FadeInDown.delay(200).duration(500)}>
           {mode === 'signup' && (
             <>
-              <Field label="FULL NAME" value={fullName} onChange={setFullName} placeholder="Your name" autoComplete="name" />
-              <Field label="USERNAME" value={username} onChange={setUsername} placeholder="@yourhandle" />
+              <Field label="AD SOYAD" value={fullName} onChange={setFullName} placeholder="Adın" autoComplete="name" />
+              <Field label="KULLANICI ADI" value={username} onChange={setUsername} placeholder="@kullaniciadin" />
             </>
           )}
-          <Field label="EMAIL" value={email} onChange={setEmail} placeholder="coffee@lover.com" keyboardType="email-address" autoComplete="email" />
-          <Field label="PASSWORD" value={password} onChange={setPassword} placeholder="••••••••" secure autoComplete={mode === 'login' ? 'current-password' : 'new-password'} />
+          <Field label="E-POSTA" value={email} onChange={setEmail} placeholder="kahve@sever.com" keyboardType="email-address" autoComplete="email" />
+          <Field label="ŞİFRE" value={password} onChange={setPassword} placeholder="••••••••" secure autoComplete={mode === 'login' ? 'current-password' : 'new-password'} />
         </Animated.View>
 
         {/* Submit */}
@@ -195,13 +195,13 @@ export default function LoginScreen() {
             onPress={handleSubmit}
             disabled={loading}
             accessibilityRole="button"
-            accessibilityLabel={mode === 'login' ? 'Sign in' : 'Create account'}
+            accessibilityLabel={mode === 'login' ? 'Giriş yap' : 'Hesap oluştur'}
           >
             {loading
               ? <ActivityIndicator color={Colors.ink} />
               : (
                 <Text style={styles.submitText}>
-                  {mode === 'login' ? 'Sign In' : 'Create Account'} →
+                  {mode === 'login' ? 'Giriş Yap' : 'Hesap Oluştur'} →
                 </Text>
               )
             }
@@ -211,7 +211,7 @@ export default function LoginScreen() {
         {/* Divider */}
         <Animated.View entering={FadeInDown.delay(380).duration(400)} style={styles.dividerRow}>
           <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>or</Text>
+          <Text style={styles.dividerText}>veya</Text>
           <View style={styles.dividerLine} />
         </Animated.View>
 
@@ -222,7 +222,7 @@ export default function LoginScreen() {
             style={styles.guestBtn}
             accessibilityRole="button"
           >
-            <Text style={styles.guestText}>Continue as guest</Text>
+            <Text style={styles.guestText}>Misafir olarak devam et</Text>
           </TouchableOpacity>
         </Animated.View>
 
@@ -230,7 +230,7 @@ export default function LoginScreen() {
         <Animated.View entering={FadeInDown.delay(500).duration(400)} style={{ alignItems: 'center', marginTop: Spacing.xl }}>
           <TouchableOpacity onPress={() => router.replace('/onboarding')} accessibilityRole="button">
             <Text style={{ fontFamily: 'SyneMono-Regular', fontSize: 9, color: Colors.mist, letterSpacing: 2 }}>
-              ← BACK
+              ← GERİ
             </Text>
           </TouchableOpacity>
         </Animated.View>

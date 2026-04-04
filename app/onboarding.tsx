@@ -16,30 +16,30 @@ const { width: W, height: H } = Dimensions.get('window');
 
 const SLIDES = [
   {
-    eyebrow: 'THE PROBLEM',
-    title: "You've had 3 amazing cups this week.",
-    emphasis: 'You remember none of them.',
-    body: 'Every great coffee deserves to be remembered. Origin, process, roastery — all of it.',
+    eyebrow: 'SORUN',
+    title: "Bu hafta 3 harika fincan içtin.",
+    emphasis: 'Hiçbirini hatırlamıyorsun.',
+    body: 'Her harika kahve hatırlanmayı hak eder. Menşei, prosesi, kavurucusu — hepsi.',
     emoji: '☕',
     accent: Colors.copper,
     from: '#1e0e06',
     mid:  '#3d1f0f',
   },
   {
-    eyebrow: 'THE RITUAL',
-    title: 'Check in every cup.',
-    emphasis: 'Build your flavor memory.',
-    body: 'Rate, note tasting flavors, log your brew method. Your palate evolves with every pour.',
+    eyebrow: 'RİTÜEL',
+    title: 'Her fincanı check-in yap.',
+    emphasis: 'Lezzet hafızanı oluştur.',
+    body: 'Puan ver, tadım notlarını ekle, demleme yöntemini kaydet. Damak tadın her fincanla gelişir.',
     emoji: '📓',
     accent: Colors.amber,
     from: '#0e1808',
     mid:  '#1e3418',
   },
   {
-    eyebrow: 'THE COMMUNITY',
-    title: 'See what the people you trust',
-    emphasis: 'are drinking right now.',
-    body: 'Follow fellow enthusiasts. Discover new origins. Find specialty cafés near you.',
+    eyebrow: 'TOPLULUK',
+    title: 'Güvendiğin insanların',
+    emphasis: 'şu an ne içtiğini gör.',
+    body: 'Tutkunları takip et. Yeni menşeiler keşfet. Yakındaki specialty kafeleri bul.',
     emoji: '🫶',
     accent: Colors.gold,
     from: '#160e22',
@@ -225,10 +225,10 @@ export default function OnboardingScreen() {
             onPress={goNext}
             style={[styles.btn, { backgroundColor: slide.accent }]}
             accessibilityRole="button"
-            accessibilityLabel={current < SLIDES.length - 1 ? 'Next slide' : 'Get started'}
+            accessibilityLabel={current < SLIDES.length - 1 ? 'Sonraki slayt' : 'Başla'}
           >
             <Text style={styles.btnText}>
-              {current < SLIDES.length - 1 ? 'Continue' : 'Start your journey'}
+              {current < SLIDES.length - 1 ? 'Devam et' : 'Yolculuğunu başlat'}
             </Text>
             <Text style={[styles.btnArrow, { color: Colors.ink }]}>→</Text>
           </TouchableOpacity>

@@ -16,7 +16,7 @@ import { Colors, Typography, Spacing, Radius, SPRING, HERO_GRADIENTS } from '../
 
 const { width: W } = require('react-native').Dimensions.get('window');
 
-const TABS = ['Check-ins', 'Wishlist', 'Badges'];
+const TABS = ['Check-inler', 'İstek Listesi', 'Rozetler'];
 
 const DNA_CATS: { label: string; keys: string[]; color: string }[] = [
   { label: 'FLORAL',   keys: ['jasmine','rose','chamomile','lavender','floral'],                    color: Colors.gold },
@@ -149,7 +149,7 @@ function BadgeCell({ badge, earnedAt }: { badge: any; earnedAt?: string | null }
       <Text style={[bc.name, !earned && { color: Colors.fog }]}>{badge.name}</Text>
       {earned
         ? <Text style={bc.date}>{new Date(earnedAt!).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</Text>
-        : <Text style={bc.locked}>LOCKED</Text>
+        : <Text style={bc.locked}>KİLİTLİ</Text>
       }
     </View>
   );
@@ -179,13 +179,13 @@ export default function ProfileScreen() {
 
   const handleSignOut = async () => {
     await signOut();
-    showToast({ type: 'success', title: 'Signed out.', subtitle: 'See you next cup.' });
+    showToast({ type: 'success', title: 'Çıkış yapıldı.', subtitle: 'Bir sonraki fincanda görüşürüz.' });
     router.replace('/(auth)/login');
   };
 
   if (isLoading) return <View style={{ flex: 1, backgroundColor: Colors.ink }}><ProfileSkeleton /></View>;
 
-  const displayName = profile?.full_name ?? authProfile?.full_name ?? 'Coffee Lover';
+  const displayName = profile?.full_name ?? authProfile?.full_name ?? 'Kahve Tutkunu';
   const username = profile?.username ?? authProfile?.username ?? '—';
   const checkins = profile?.checkins ?? [];
   const wishlist = profile?.wishlists ?? [];
@@ -198,7 +198,7 @@ export default function ProfileScreen() {
     : '—';
   const dnaBars = buildDna(checkins);
   const progressToNextBadge = Math.min(100, Math.round((checkins.length / 10) * 100));
-  const trustLevel = checkins.length >= 30 ? 'Expert' : checkins.length >= 12 ? 'Advanced' : checkins.length >= 5 ? 'Curious' : 'Newcomer';
+  const trustLevel = checkins.length >= 30 ? 'Uzman' : checkins.length >= 12 ? 'İleri' : checkins.length >= 5 ? 'Meraklı' : 'Yeni Başlayan';
 
 
   return (
@@ -209,10 +209,10 @@ export default function ProfileScreen() {
         <Text style={styles.name}>{displayName}</Text>
         <Text style={styles.handle}>@{username}{profile?.location ? ` · ${profile.location}` : ''}</Text>
         <View style={styles.heroActions}>
-          <TouchableOpacity style={styles.editBtn} accessibilityRole="button" accessibilityLabel="Edit profile">
-            <Text style={styles.editBtnText}>Edit Profile</Text>
+          <TouchableOpacity style={styles.editBtn} accessibilityRole="button" accessibilityLabel="Profili düzenle">
+            <Text style={styles.editBtnText}>Profili Düzenle</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.signOutBtn} onPress={handleSignOut} accessibilityRole="button" accessibilityLabel="Sign out">
+          <TouchableOpacity style={styles.signOutBtn} onPress={handleSignOut} accessibilityRole="button" accessibilityLabel="Çıkış yap">
             <Text style={{ fontSize: 14, color: Colors.fog }}>↩</Text>
           </TouchableOpacity>
         </View>
@@ -220,7 +220,7 @@ export default function ProfileScreen() {
 
       {/* Stats */}
       <View style={styles.statsRow}>
-        {[{n: String(checkins.length), l:'Check-ins'}, {n: String(origins), l:'Origins'}, {n: String(followers), l:'Followers'}, {n: String(following), l:'Following'}].map((s, i) => (
+        {[{n: String(checkins.length), l:'Check-inler'}, {n: String(origins), l:'Menşeiler'}, {n: String(followers), l:'Takipçi'}, {n: String(following), l:'Takip'}].map((s, i) => (
           <React.Fragment key={s.l}>
             {i > 0 && <View style={styles.statDiv} />}
             <TouchableOpacity style={styles.statItem} accessibilityRole="button">
@@ -233,28 +233,28 @@ export default function ProfileScreen() {
 
       {/* DNA */}
       <View style={styles.section}>
-        <Text style={styles.sectionLabel}>FLAVOR DNA</Text>
+        <Text style={styles.sectionLabel}>LEZZET DNA</Text>
         <View style={styles.dnaCard}>
           {dnaBars.length > 0
             ? dnaBars.map((b, i) => <DnaBar key={b.label} label={b.label} pct={b.pct} index={i} color={b.color} />)
             : <Text style={{ fontFamily: 'Syne-Regular', fontSize: 13, color: Colors.fog, textAlign: 'center', paddingVertical: Spacing.md }}>
-                Check in coffees to build your flavor DNA.
+                Lezzet DNA’ını oluşturmak için kahveleri check-in yap.
               </Text>
           }
         </View>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionLabel}>PROGRESSION</Text>
+        <Text style={styles.sectionLabel}>İLERLEME</Text>
         <View style={styles.progressCard}>
           <View style={styles.progressHead}>
-            <Text style={styles.progressTitle}>Trust signal</Text>
+            <Text style={styles.progressTitle}>Güven seviyesi</Text>
             <Text style={styles.progressLevel}>{trustLevel}</Text>
           </View>
           <View style={styles.progressTrack}>
             <View style={[styles.progressFill, { width: `${progressToNextBadge}%` }]} />
           </View>
-          <Text style={styles.progressMeta}>Next badge progress · {progressToNextBadge}%</Text>
+          <Text style={styles.progressMeta}>Sonraki rozet ilerlemesi · {progressToNextBadge}%</Text>
         </View>
       </View>
 
@@ -264,19 +264,19 @@ export default function ProfileScreen() {
 
         {activeTab === 0 && (
           checkins.length === 0
-            ? <EmptyState emoji="☕" title="No check-ins yet." subtitle="Your first cup is waiting." ctaLabel="Start check-in" onCta={() => router.push('/(tabs)/check-in')} />
+            ? <EmptyState emoji="☕" title="Henüz check-in yok." subtitle="İlk fincanın seni bekliyor." ctaLabel="Check-in başlat" onCta={() => router.push('/(tabs)/check-in')} />
             : <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm }}>{checkins.map((c: any, i: number) => <GridCard key={c.id} item={c} index={i} />)}</View>
         )}
 
         {activeTab === 1 && (
           wishlist.length === 0
-            ? <EmptyState emoji="☕" title="No coffees saved yet." subtitle="Browse Discover and save coffees to try." />
+            ? <EmptyState emoji="☕" title="Henüz kaydedilmiş kahve yok." subtitle="Keşfet sekmesini gez ve denemek için kahve kaydet." />
             : wishlist.map((w: any) => <WishRow key={w.coffee_id} item={w} onRemove={() => {}} />)
         )}
 
         {activeTab === 2 && (
           earnedBadges.length === 0
-            ? <EmptyState emoji="🏅" title="Earn your first badge." subtitle="Check in 5 coffees from different origins." />
+            ? <EmptyState emoji="🏅" title="İlk rozetini kazan." subtitle="Farklı menşeilerden 5 kahveyi check-in yap." />
             : <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm }}>{earnedBadges.map((ub: any) => <BadgeCell key={ub.badges?.id} badge={ub.badges} earnedAt={ub.earned_at} />)}</View>
         )}
       </View>

@@ -19,7 +19,7 @@ import { Colors, Typography, Spacing, Radius, SPRING } from '../../constants/tok
 import { BRAND_COPY } from '../../constants/content';
 import { ANALYTICS_EVENTS, trackEvent } from '../../constants/analytics';
 
-const STEPS = ['Coffee', 'Café', 'Flavors', 'Rate'];
+const STEPS = ['Kahve', 'Kafe', 'Tatlar', 'Puan'];
 const BREW_METHODS = ['Espresso', 'V60', 'Chemex', 'AeroPress', 'French Press', 'Cold Brew'];
 const MAX_FLAVORS = 6;
 
@@ -126,7 +126,7 @@ function SuccessOverlay({ visible, coffeeName, onDismiss }: { visible: boolean; 
     <Animated.View style={[so.overlay, oStyle]}>
       <Animated.View style={[so.circle, cStyle]}><Text style={so.check}>✓</Text></Animated.View>
       <Animated.View style={tStyle}>
-        <Text style={so.saved}>Saved!</Text>
+        <Text style={so.saved}>Kaydedildi!</Text>
         <Text style={so.sub}>{coffeeName}</Text>
       </Animated.View>
     </Animated.View>
@@ -169,14 +169,14 @@ export default function CheckInScreen() {
 
   const goNext = () => {
     if (step === 0 && !selectedCoffee) {
-      showToast({ type: 'info', title: 'Select a coffee first' });
+      showToast({ type: 'info', title: 'Önce bir kahve seç' });
       return;
     }
     if (step === 1 && !selectedCafe && !brewMethod) {
-      showToast({ type: 'info', title: 'Tip', subtitle: 'Select café or brew method to continue.' });
+      showToast({ type: 'info', title: 'İpucu', subtitle: 'Devam etmek için kafe veya demleme yöntemi seç.' });
     }
     if (step === 2 && flavors.length === 0) {
-      showToast({ type: 'info', title: 'Pick tasting notes', subtitle: 'At least one note is required.' });
+      showToast({ type: 'info', title: 'Tadım notları seç', subtitle: 'En az bir not gerekli.' });
       return;
     }
     panelX.value = withSpring(-(step + 1) * panelW, { mass: 0.9, stiffness: 180, damping: 20 });
@@ -192,7 +192,7 @@ export default function CheckInScreen() {
       if (prev.includes(f)) return prev.filter(x => x !== f);
       if (prev.length >= MAX_FLAVORS) {
         haptics.warning();
-        showToast({ type: 'info', title: 'Max 6 notes', subtitle: 'Remove one to add another.' });
+        showToast({ type: 'info', title: 'En fazla 6 not', subtitle: 'Yenisini eklemek için birini kaldır.' });
         return prev;
       }
       return [...prev, f];
@@ -208,17 +208,17 @@ export default function CheckInScreen() {
     const { coffee } = await lookupBarcode(barcode);
     if (coffee) {
       setSelectedCoffee(coffee);
-      showToast({ type: 'success', title: 'Coffee found!', subtitle: coffee.name });
+      showToast({ type: 'success', title: 'Kahve bulundu!', subtitle: coffee.name });
       goNext();
     } else {
-      showToast({ type: 'info', title: 'Not in database', subtitle: 'Try searching manually.' });
+      showToast({ type: 'info', title: 'Veritabanında yok', subtitle: 'Manuel aramayı dene.' });
     }
   };
 
   const handleSave = async () => {
     trackEvent(ANALYTICS_EVENTS.checkinStarted, { step });
-    if (!user) { showToast({ type: 'error', title: 'Sign in required', subtitle: 'Create an account to save check-ins.' }); return; }
-    if (!selectedCoffee) { showToast({ type: 'error', title: 'Select a coffee first' }); return; }
+    if (!user) { showToast({ type: 'error', title: 'Giriş gerekli', subtitle: 'Check-in kaydetmek için hesap oluştur.' }); return; }
+    if (!selectedCoffee) { showToast({ type: 'error', title: 'Önce bir kahve seç' }); return; }
     if (rating === 0) { showToast({ type: 'error', title: BRAND_COPY.toast.addRatingTitle, subtitle: BRAND_COPY.toast.addRatingSubtitle }); return; }
 
     btnScale.value = withSequence(withSpring(0.97, SPRING), withSpring(1.0, SPRING));
@@ -235,7 +235,7 @@ export default function CheckInScreen() {
 
     if (error) {
       haptics.error();
-      showToast({ type: 'error', title: 'Save failed', subtitle: error.message });
+      showToast({ type: 'error', title: 'Kaydetme başarısız', subtitle: error.message });
     } else {
       haptics.success();
       trackEvent(ANALYTICS_EVENTS.checkinCompleted, { noteMode, flavors: flavors.length, rating });
@@ -249,10 +249,10 @@ export default function CheckInScreen() {
       <View style={styles.navRow}>
         {step > 0 ? (
           <TouchableOpacity onPress={goPrev} style={styles.backBtn} accessibilityRole="button">
-            <Text style={styles.backText}>← Back</Text>
+            <Text style={styles.backText}>← Geri</Text>
           </TouchableOpacity>
         ) : <View style={styles.backBtn} />}
-        <Text style={styles.navTitle}>New Check-in</Text>
+        <Text style={styles.navTitle}>Yeni Check-in</Text>
         <View style={styles.backBtn} />
       </View>
 
@@ -263,21 +263,21 @@ export default function CheckInScreen() {
 
           {/* STEP 0 — Coffee */}
           <ScrollView style={[styles.panel, { width: panelW }]} contentContainerStyle={styles.panelContent}>
-            <Text style={styles.stepTitle}>Which coffee?</Text>
-            <StepSearchBar placeholder="Search coffee..." value={coffeeSearch} onChange={setCoffeeSearch} />
+            <Text style={styles.stepTitle}>Hangi kahve?</Text>
+            <StepSearchBar placeholder="Kahve ara..." value={coffeeSearch} onChange={setCoffeeSearch} />
             <TouchableOpacity
               style={styles.scanRow}
               onPress={() => { haptics.medium(); setScannerVisible(true); }}
               accessibilityRole="button"
-              accessibilityLabel="Scan barcode"
+              accessibilityLabel="Barkod tara"
             >
               <Text style={{ fontSize: 20 }}>📸</Text>
               <View>
-                <Text style={styles.scanName}>Scan Barcode</Text>
-                <Text style={styles.scanSub}>Auto-match from our database</Text>
+                <Text style={styles.scanName}>Barkod Tara</Text>
+                <Text style={styles.scanSub}>Veritabanımızdan otomatik eşleştir</Text>
               </View>
             </TouchableOpacity>
-            <Text style={styles.subLabel}>COFFEES</Text>
+            <Text style={styles.subLabel}>KAHVELER</Text>
             {(coffees ?? []).slice(0, 10).map((c: any) => (
               <TouchableOpacity
                 key={c.id}
@@ -297,9 +297,9 @@ export default function CheckInScreen() {
 
           {/* STEP 1 — Café */}
           <ScrollView style={[styles.panel, { width: panelW }]} contentContainerStyle={styles.panelContent}>
-            <Text style={styles.stepTitle}>Where are you?</Text>
-            <StepSearchBar placeholder="Search cafés..." value={cafeSearch} onChange={setCafeSearch} />
-            <Text style={styles.subLabel}>NEARBY CAFÉS</Text>
+            <Text style={styles.stepTitle}>Neredesin?</Text>
+            <StepSearchBar placeholder="Kafe ara..." value={cafeSearch} onChange={setCafeSearch} />
+            <Text style={styles.subLabel}>YAKIN KAFELER</Text>
             {(cafes ?? []).slice(0, 8).map((c: any) => (
               <TouchableOpacity
                 key={c.id}
@@ -310,12 +310,12 @@ export default function CheckInScreen() {
                 <View style={styles.itemThumb}><Text style={{ fontSize: 14 }}>☕</Text></View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.itemName}>{c.name}</Text>
-                  <Text style={styles.itemSub}>{c.address ?? 'Specialty Café'}</Text>
+                  <Text style={styles.itemSub}>{c.address ?? 'Specialty Kafe'}</Text>
                 </View>
                 <Text style={styles.chevron}>›</Text>
               </TouchableOpacity>
             ))}
-            <Text style={styles.subLabel}>BREW METHOD</Text>
+            <Text style={styles.subLabel}>DEMLEME YÖNTEMİ</Text>
             <View style={styles.methodRow}>
               {BREW_METHODS.map(m => (
                 <TouchableOpacity key={m} onPress={() => setBrewMethod(m)} style={[styles.methodPill, brewMethod === m && styles.methodPillActive]} accessibilityRole="button">
@@ -328,8 +328,8 @@ export default function CheckInScreen() {
 
           {/* STEP 2 — Flavors */}
           <ScrollView style={[styles.panel, { width: panelW }]} contentContainerStyle={styles.panelContent}>
-            <Text style={styles.stepTitle}>Tasting notes</Text>
-            <Text style={styles.stepSub}>Pick what you taste. Trust your palate.</Text>
+            <Text style={styles.stepTitle}>Tadım notları</Text>
+            <Text style={styles.stepSub}>Tattıklarını seç. Damak tadına güven.</Text>
             <TastingWheel
               selected={flavors}
               onToggle={(f) => toggleFlavor(f)}
@@ -340,7 +340,7 @@ export default function CheckInScreen() {
 
           {/* STEP 3 — Rate */}
           <ScrollView style={[styles.panel, { width: panelW }]} contentContainerStyle={styles.panelContent}>
-            <Text style={styles.stepTitle}>Your verdict</Text>
+            <Text style={styles.stepTitle}>Senin yorumun</Text>
             {selectedCoffee && <Text style={styles.selectedCoffeeName}>{selectedCoffee.name}</Text>}
             <View style={styles.ratingCard}>
               <View style={{ flexDirection: 'row', gap: Spacing.sm, alignItems: 'center' }}>
@@ -355,27 +355,27 @@ export default function CheckInScreen() {
                 {rating > 0 && <Text style={styles.ratingNum}>{rating.toFixed(1)}</Text>}
               </View>
             </View>
-            <Text style={styles.subLabel}>TASTING NOTE</Text>
+            <Text style={styles.subLabel}>TADIM NOTU</Text>
             <View style={styles.modeRow}>
               <TouchableOpacity onPress={() => setNoteMode('short')} style={[styles.modeBtn, noteMode === 'short' && styles.modeBtnActive]} accessibilityRole="button">
-                <Text style={[styles.modeBtnText, noteMode === 'short' && styles.modeBtnTextActive]}>Short</Text>
+                <Text style={[styles.modeBtnText, noteMode === 'short' && styles.modeBtnTextActive]}>Kısa</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setNoteMode('long')} style={[styles.modeBtn, noteMode === 'long' && styles.modeBtnActive]} accessibilityRole="button">
-                <Text style={[styles.modeBtnText, noteMode === 'long' && styles.modeBtnTextActive]}>Long</Text>
+                <Text style={[styles.modeBtnText, noteMode === 'long' && styles.modeBtnTextActive]}>Uzun</Text>
               </TouchableOpacity>
             </View>
             <TextInput
               style={styles.noteInput}
-              placeholder={noteMode === 'short' ? 'Jasmine, bergamot, stone fruit...' : 'Describe aroma, acidity, sweetness, body, and aftertaste...'}
+              placeholder={noteMode === 'short' ? 'Yasemin, bergamot, taş meyve...' : 'Aroma, asidite, tatlılık, gövde ve bitişi tarif et...'}
               placeholderTextColor={Colors.fog}
               multiline
               value={note}
               onChangeText={setNote}
-              accessibilityLabel="Tasting note"
+              accessibilityLabel="Tadım notu"
             />
             {flavors.length > 0 && (
               <>
-                <Text style={styles.subLabel}>SELECTED NOTES</Text>
+                <Text style={styles.subLabel}>SEÇİLEN NOTLAR</Text>
                 <View style={styles.selectedTags}>
                   {flavors.map(f => (
                     <View key={f} style={styles.selectedTag}><Text style={styles.selectedTagText}>{f}</Text></View>
@@ -398,7 +398,7 @@ export default function CheckInScreen() {
             accessibilityRole="button"
           >
             <Text style={styles.continueBtnText}>
-              {step === 2 ? `Continue with ${flavors.length} notes →` : 'Continue →'}
+              {step === 2 ? `${flavors.length} not ile devam et →` : 'Devam et →'}
             </Text>
           </TouchableOpacity>
         ) : (
@@ -411,7 +411,7 @@ export default function CheckInScreen() {
             >
               {submitMutation.isPending
                 ? <ActivityIndicator color={Colors.ink} />
-                : <Text style={styles.saveBtnText}>Save Check-in ✓</Text>
+                : <Text style={styles.saveBtnText}>Check-in Kaydet ✓</Text>
               }
             </TouchableOpacity>
           </Animated.View>

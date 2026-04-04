@@ -351,7 +351,7 @@ function FeedHeader({
   active, onFilter, profile, recommendations, trending, userId,
   greeting,
 }: { active: string; onFilter: (f: string) => void; profile: any; recommendations?: any[]; trending?: any[]; userId?: string; greeting: { line1: string; line2: string } }) {
-  const FILTERS = ['All', 'Following', 'Nearby'];
+  const FILTERS = ['Tümü', 'Takip Ettiklerim', 'Yakında'];
 
   return (
     <View style={hs.wrap}>
@@ -467,7 +467,7 @@ function FeedHeader({
           <Text style={hs.quickSub}>Capture cup in seconds</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => router.push('/(tabs)/discover' as any)} style={hs.quickBtn} accessibilityRole="button" accessibilityLabel="Quick action discover coffees">
-          <Text style={hs.quickTitle}>Discover</Text>
+          <Text style={hs.quickTitle}>Keşfet</Text>
           <Text style={hs.quickSub}>Find your next favorite</Text>
         </TouchableOpacity>
       </Animated.View>
@@ -509,7 +509,7 @@ function FeedHeader({
 
       {/* Section label */}
       <Text style={hs.section}>
-        {active === 'Following' ? "FRIENDS' PICKS" : active === 'Nearby' ? 'NEAR YOU' : 'LATEST POURS'}
+        {active === 'Following' ? "ARKADAŞ SEÇİMLERİ" : active === 'Nearby' ? 'YAKININDA' : 'SON DÖKÜMLER'}
       </Text>
       <Text style={hs.metaCopy}>
         {PRODUCT_MANIFEST.vision} · FMP ≤ {PERFORMANCE_BUDGETS.firstMeaningfulPaintMs}ms

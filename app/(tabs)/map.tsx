@@ -43,8 +43,8 @@ function WebMapFallback() {
   return (
     <View style={wm.container}>
       <Text style={wm.emoji}>🗺️</Text>
-      <Text style={wm.title}>Map View</Text>
-      <Text style={wm.sub}>Interactive map available on the mobile app.{'\n'}Specialty cafés nearby are listed below.</Text>
+      <Text style={wm.title}>Harita Görünümü</Text>
+      <Text style={wm.sub}>Etkileşimli harita mobil uygulamada kullanılabilir.{'\n'}Yakındaki specialty kafeler aşağıda listelenmiştir.</Text>
     </View>
   );
 }
@@ -86,16 +86,16 @@ function CaféRow({ item, last, onPress }: { item: typeof CAFES[0]; last: boolea
         onPressOut={() => { scale.value = withSpring(1.0, SPRING); }}
         onPress={onPress}
         accessibilityRole="button"
-        accessibilityLabel={`Select ${item.name}`}
+        accessibilityLabel={`${item.name} seç`}
       >
         <View style={cr.dot} />
         <View style={{ flex: 1 }}>
           <Text style={cr.name}>{item.name}</Text>
           <Text style={cr.meta}>
-            {item.distance} · <Text style={{ color: item.open ? Colors.amber : Colors.fog }}>{item.open ? 'Open' : 'Closed'}</Text>
+            {item.distance} · <Text style={{ color: item.open ? Colors.amber : Colors.fog }}>{item.open ? 'Açık' : 'Kapalı'}</Text>
           </Text>
           <Text style={cr.signal}>
-            {item.specialty ? 'Specialty' : 'Café'} · {item.trusted ? 'Trusted picks' : 'New spot'}
+            {item.specialty ? 'Specialty' : 'Kafe'} · {item.trusted ? 'Güvenilir öneriler' : 'Yeni mekan'}
           </Text>
         </View>
         <Text style={cr.score}>{item.score.toFixed(1)}</Text>
@@ -154,9 +154,9 @@ export default function MapScreen() {
       <ScrollView style={{ flex: 1, backgroundColor: Colors.ink }} contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
         {/* Page header */}
         <Animated.View entering={FadeIn.duration(500)} style={webStyles.header}>
-          <Text style={webStyles.eyebrow}>SPECIALTY CAFÉS</Text>
-          <Text style={webStyles.title}>Nearby</Text>
-          <Text style={webStyles.subtitle}>Discover specialty coffee shops around you.</Text>
+          <Text style={webStyles.eyebrow}>SPECIALTY KAFELER</Text>
+          <Text style={webStyles.title}>Yakında</Text>
+          <Text style={webStyles.subtitle}>Etrafındaki specialty kahve mekanlarını keşfet.</Text>
         </Animated.View>
 
         {/* Search bar */}
@@ -165,13 +165,13 @@ export default function MapScreen() {
             <Text style={{ color: Colors.copper, fontSize: 15 }}>⊙</Text>
             <TextInput
               style={webStyles.searchInput}
-              placeholder="Search specialty cafés..."
+              placeholder="Specialty kafe ara..."
               placeholderTextColor={Colors.fog}
               value={searchQuery}
               onChangeText={setSearchQuery}
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setSearchFocused(false)}
-              accessibilityLabel="Search cafés"
+              accessibilityLabel="Kafe ara"
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={() => setSearchQuery('')} style={{ padding: 4 }}>
@@ -182,28 +182,28 @@ export default function MapScreen() {
         </Animated.View>
         <View style={webStyles.filterRow}>
           <TouchableOpacity onPress={() => setOnlyOpen((v) => !v)} style={[webStyles.filterChip, onlyOpen && webStyles.filterChipActive]} accessibilityRole="button">
-            <Text style={[webStyles.filterChipText, onlyOpen && webStyles.filterChipTextActive]}>Open now</Text>
+            <Text style={[webStyles.filterChipText, onlyOpen && webStyles.filterChipTextActive]}>Şimdi açık</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => setOnlyTrusted((v) => !v)} style={[webStyles.filterChip, onlyTrusted && webStyles.filterChipActive]} accessibilityRole="button">
-            <Text style={[webStyles.filterChipText, onlyTrusted && webStyles.filterChipTextActive]}>Trusted</Text>
+            <Text style={[webStyles.filterChipText, onlyTrusted && webStyles.filterChipTextActive]}>Güvenilir</Text>
           </TouchableOpacity>
         </View>
 
         {/* Map placeholder card */}
         <Animated.View entering={FadeInDown.delay(120).duration(400)} style={webStyles.mapPlaceholder}>
           <Text style={webStyles.mapEmoji}>🗺️</Text>
-          <Text style={webStyles.mapTitle}>Interactive Map</Text>
-          <Text style={webStyles.mapSub}>Full interactive map is available on the mobile app.{'\n'}Specialty cafés nearby are listed below.</Text>
+          <Text style={webStyles.mapTitle}>Etkileşimli Harita</Text>
+          <Text style={webStyles.mapSub}>Tam etkileşimli harita mobil uygulamada kullanılabilir.{'\n'}Yakındaki specialty kafeler aşağıda listelenmiştir.</Text>
         </Animated.View>
 
         {/* Section label */}
-        <Text style={webStyles.sectionLabel}>{filtered.length} SPECIALTY CAFÉS NEARBY</Text>
+        <Text style={webStyles.sectionLabel}>{filtered.length} YAKINDAKİ SPECIALTY KAFE</Text>
 
         {/* Café list */}
         <View style={webStyles.listWrap}>
           {filtered.length === 0 ? (
             <View style={{ padding: Spacing.xl, alignItems: 'center' }}>
-              <Text style={{ fontFamily: 'SyneMono-Regular', fontSize: 11, color: Colors.fog, letterSpacing: 1 }}>No cafés match your search.</Text>
+              <Text style={{ fontFamily: 'SyneMono-Regular', fontSize: 11, color: Colors.fog, letterSpacing: 1 }}>Aramana uyan kafe bulunamadı.</Text>
             </View>
           ) : (
             filtered.map((cafe, i) => (
@@ -255,21 +255,21 @@ export default function MapScreen() {
           <Text style={{ color: Colors.copper }}>⊙</Text>
           <TextInput
             style={styles.searchInput}
-            placeholder="Search specialty cafés..."
+            placeholder="Specialty kafe ara..."
             placeholderTextColor={Colors.fog}
             value={searchQuery}
             onChangeText={setSearchQuery}
             onFocus={() => setSearchFocused(true)}
             onBlur={() => setSearchFocused(false)}
-            accessibilityLabel="Search cafés"
+            accessibilityLabel="Kafe ara"
           />
         </View>
         <View style={styles.nativeFilterRow}>
           <TouchableOpacity onPress={() => setOnlyOpen((v) => !v)} style={[styles.nativeFilterChip, onlyOpen && styles.nativeFilterChipActive]} accessibilityRole="button">
-            <Text style={[styles.nativeFilterChipText, onlyOpen && styles.nativeFilterChipTextActive]}>Open</Text>
+            <Text style={[styles.nativeFilterChipText, onlyOpen && styles.nativeFilterChipTextActive]}>Açık</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => setOnlyTrusted((v) => !v)} style={[styles.nativeFilterChip, onlyTrusted && styles.nativeFilterChipActive]} accessibilityRole="button">
-            <Text style={[styles.nativeFilterChipText, onlyTrusted && styles.nativeFilterChipTextActive]}>Trusted</Text>
+            <Text style={[styles.nativeFilterChipText, onlyTrusted && styles.nativeFilterChipTextActive]}>Güvenilir</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -278,7 +278,7 @@ export default function MapScreen() {
       <Animated.View style={[styles.drawer, drawerStyle]}>
         <View style={styles.handle} />
         <Text style={styles.drawerLabel}>
-          {CAFES.filter((c) => (!onlyOpen || c.open) && (!onlyTrusted || c.trusted)).length} SPECIALTY CAFÉS NEARBY
+          {CAFES.filter((c) => (!onlyOpen || c.open) && (!onlyTrusted || c.trusted)).length} YAKINDAKİ SPECIALTY KAFE
         </Text>
         {CAFES.filter((c) => (!onlyOpen || c.open) && (!onlyTrusted || c.trusted)).map((cafe, i, arr) => (
           <CaféRow

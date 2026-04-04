@@ -36,7 +36,7 @@ export function ErrorState({ message, onRetry }: ErrorStateProps) {
   return (
     <View style={s.wrap}>
       <Text style={s.emoji}>⚠️</Text>
-      <Text style={s.title}>Something went wrong</Text>
+      <Text style={s.title}>Bir şeyler ters gitti</Text>
       <Text style={s.subtitle}>{message ?? 'We couldn\'t load this content.'}</Text>
       {onRetry && (
         <TouchableOpacity onPress={onRetry} style={s.retryBtn} accessibilityRole="button">

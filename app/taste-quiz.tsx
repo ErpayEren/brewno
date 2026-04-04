@@ -26,9 +26,9 @@ const { width: W, height: H } = Dimensions.get('window');
 const FLAVORS = [
   {
     key: 'floral',
-    label: 'Floral',
+    label: 'Çiçeksi',
     emoji: '🌸',
-    tagline: 'Delicate & tea-like',
+    tagline: 'Zarif ve çayımsı',
     examples: ['jasmine', 'rose', 'chamomile', 'lavender'],
     accent: '#c880b0',
     from: '#1a0e18',
@@ -36,9 +36,9 @@ const FLAVORS = [
   },
   {
     key: 'fruity',
-    label: 'Fruity',
+    label: 'Meyvemsi',
     emoji: '🍓',
-    tagline: 'Bright & playful',
+    tagline: 'Canlı ve neşeli',
     examples: ['blueberry', 'peach', 'citrus', 'tropical'],
     accent: Colors.copper,
     from: '#1e0e06',
@@ -46,9 +46,9 @@ const FLAVORS = [
   },
   {
     key: 'sweet',
-    label: 'Sweet',
+    label: 'Tatlı',
     emoji: '🍯',
-    tagline: 'Warm & comforting',
+    tagline: 'Sıcak ve rahatlatıcı',
     examples: ['caramel', 'honey', 'vanilla', 'brown sugar'],
     accent: Colors.amber,
     from: '#1e1206',
@@ -56,9 +56,9 @@ const FLAVORS = [
   },
   {
     key: 'nutty',
-    label: 'Nutty',
+    label: 'Kuruyemişimsi',
     emoji: '🍫',
-    tagline: 'Rich & grounding',
+    tagline: 'Yoğun ve dengeli',
     examples: ['hazelnut', 'cocoa', 'dark chocolate', 'almond'],
     accent: '#b07840',
     from: '#180e06',
@@ -66,9 +66,9 @@ const FLAVORS = [
   },
   {
     key: 'spice',
-    label: 'Spice',
+    label: 'Baharatlı',
     emoji: '🌶️',
-    tagline: 'Complex & aromatic',
+    tagline: 'Kompleks ve aromatik',
     examples: ['cinnamon', 'bergamot', 'clove', 'pepper'],
     accent: '#c85040',
     from: '#180a08',
@@ -76,9 +76,9 @@ const FLAVORS = [
   },
   {
     key: 'roasted',
-    label: 'Roasted',
+    label: 'Kavrulmuş',
     emoji: '☕',
-    tagline: 'Deep & smoky',
+    tagline: 'Derin ve isli',
     examples: ['tobacco', 'cedar', 'smoky', 'charred'],
     accent: '#906840',
     from: '#130e0a',
@@ -86,9 +86,9 @@ const FLAVORS = [
   },
   {
     key: 'fermented',
-    label: 'Fermented',
+    label: 'Fermente',
     emoji: '🍷',
-    tagline: 'Bold & adventurous',
+    tagline: 'Cesur ve maceracı',
     examples: ['winey', 'whiskey', 'funky', 'kombucha'],
     accent: '#8040b0',
     from: '#130a18',
@@ -96,9 +96,9 @@ const FLAVORS = [
   },
   {
     key: 'earthy',
-    label: 'Earthy',
+    label: 'Topraksı',
     emoji: '🌿',
-    tagline: 'Natural & grounding',
+    tagline: 'Doğal ve dengeli',
     examples: ['herbal', 'mossy', 'mushroom', 'wet soil'],
     accent: '#508050',
     from: '#0e1408',
@@ -108,11 +108,11 @@ const FLAVORS = [
 
 // ─── Preference levels ────────────────────────────────────────────────────────
 const LEVELS = [
-  { value: 0,    label: 'None',    short: '✕' },
-  { value: 0.25, label: 'A little', short: '–' },
-  { value: 0.5,  label: 'Neutral', short: '○' },
-  { value: 0.75, label: 'Enjoy',   short: '♡' },
-  { value: 1.0,  label: 'Love',    short: '★' },
+  { value: 0,    label: 'Hiç',    short: '✕' },
+  { value: 0.25, label: 'Biraz', short: '–' },
+  { value: 0.5,  label: 'Nötr', short: '○' },
+  { value: 0.75, label: 'Severim',   short: '♡' },
+  { value: 1.0,  label: 'Bayılırım',    short: '★' },
 ] as const;
 
 type FlavorKey = typeof FLAVORS[number]['key'];
@@ -285,36 +285,36 @@ const pb = StyleSheet.create({
 const ARCHETYPES = [
   {
     key: 'bright_fruity',
-    label: 'Bright & Fruity',
+    label: 'Bright & Meyvemsi',
     emoji: '🍓',
-    tagline: 'Light, vibrant, complex',
+    tagline: 'Hafif, canlı, kompleks',
     accent: '#c87040',
     from: '#1e0e06',
     profile: { floral: 0.7, fruity: 0.9, sweet: 0.5, nutty: 0.1, spice: 0.2, roasted: 0.1, fermented: 0.2, earthy: 0.1 },
   },
   {
     key: 'rich_chocolatey',
-    label: 'Rich & Chocolatey',
+    label: 'Yoğun ve Çikolatamsı',
     emoji: '🍫',
-    tagline: 'Sweet, warm, comforting',
+    tagline: 'Tatlı, sıcak, rahatlatıcı',
     accent: '#b07840',
     from: '#180e06',
     profile: { floral: 0.1, fruity: 0.3, sweet: 0.9, nutty: 0.8, spice: 0.3, roasted: 0.5, fermented: 0.1, earthy: 0.2 },
   },
   {
     key: 'bold_smoky',
-    label: 'Bold & Smoky',
+    label: 'Cesur ve İsli',
     emoji: '☕',
-    tagline: 'Deep, intense, full-bodied',
+    tagline: 'Derin, yoğun, dolgun',
     accent: '#906840',
     from: '#130e0a',
     profile: { floral: 0.1, fruity: 0.2, sweet: 0.3, nutty: 0.5, spice: 0.4, roasted: 0.9, fermented: 0.3, earthy: 0.7 },
   },
   {
     key: 'sour_fermented',
-    label: 'Sour & Funky',
+    label: 'Ekşi ve Funky',
     emoji: '🍷',
-    tagline: 'Adventurous, wine-like',
+    tagline: 'Maceralı, şarabımsı',
     accent: '#8040b0',
     from: '#130a18',
     profile: { floral: 0.3, fruity: 0.6, sweet: 0.2, nutty: 0.1, spice: 0.5, roasted: 0.2, fermented: 0.9, earthy: 0.3 },
@@ -324,11 +324,11 @@ const ARCHETYPES = [
 type ArchetypeKey = typeof ARCHETYPES[number]['key'];
 
 const ROAST_PREFS = [
-  { key: 'light',  label: 'Light Roast',  emoji: '🌤️', accent: Colors.amber,
+  { key: 'light',  label: 'Açık Kavrum',  emoji: '🌤️', accent: Colors.amber,
     boost: { floral: 0.2, fruity: 0.2, sweet: 0.1, roasted: -0.1 } as Partial<Record<FlavorKey, number>> },
   { key: 'medium', label: 'Medium',        emoji: '⛅',  accent: Colors.copper,
     boost: { sweet: 0.1 } as Partial<Record<FlavorKey, number>> },
-  { key: 'dark',   label: 'Dark Roast',   emoji: '🌑', accent: '#906840',
+  { key: 'dark',   label: 'Koyu Kavrum',   emoji: '🌑', accent: '#906840',
     boost: { roasted: 0.2, earthy: 0.1, floral: -0.1, fruity: -0.1 } as Partial<Record<FlavorKey, number>> },
 ] as const;
 
@@ -375,8 +375,8 @@ function ArchetypeCard({
     <View style={[ac.container, { backgroundColor: Colors.ink }]}>
       <StatusBar barStyle="light-content" />
       <Animated.View entering={FadeIn.duration(400)} style={ac.inner}>
-        <Text style={ac.eyebrow}>TASTE PROFILE · PHASE 1</Text>
-        <Text style={ac.title}>What's your style?</Text>
+        <Text style={ac.eyebrow}>TAT PROFİLİ · AŞAMA 1</Text>
+        <Text style={ac.title}>Tarzın ne?</Text>
 
         <View style={ac.archetypeGrid}>
           {ARCHETYPES.map((a) => {
@@ -397,7 +397,7 @@ function ArchetypeCard({
           })}
         </View>
 
-        <Text style={[ac.subTitle, { color: Colors.fog }]}>Roast preference</Text>
+        <Text style={[ac.subTitle, { color: Colors.fog }]}>Kavrum tercihi</Text>
         <View style={ac.roastRow}>
           {ROAST_PREFS.map((r) => {
             const active = roastSelected === r.key;
@@ -422,10 +422,10 @@ function ArchetypeCard({
             style={[ac.nextBtn, { backgroundColor: firstAccent, opacity: (!selected || !roastSelected) ? 0.4 : 1 }]}
             accessibilityRole="button"
           >
-            <Text style={ac.nextBtnText}>Refine my taste →</Text>
+            <Text style={ac.nextBtnText}>Tadımı rafine et →</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={onSkip} style={ac.skipBtn} accessibilityRole="button">
-            <Text style={ac.skipText}>SKIP TO HOME</Text>
+            <Text style={ac.skipText}>ANASAYFAYA GEÇ</Text>
           </TouchableOpacity>
         </View>
       </Animated.View>
@@ -542,7 +542,7 @@ export default function TasteQuizScreen() {
       setHasTasteProfile(true);
     } catch (e: any) {
       console.error('[taste-quiz] Failed to save taste profile:', e?.message ?? e);
-      showToast({ type: 'info', title: 'Profile saved locally', subtitle: 'Preferences will sync next time' });
+      showToast({ type: 'info', title: 'Profil yerel olarak kaydedildi', subtitle: 'Tercihler bir sonraki sefer senkronlanacak' });
     } finally {
       setSaving(false);
       router.replace('/(tabs)');

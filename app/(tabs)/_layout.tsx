@@ -126,7 +126,7 @@ function PlusButton({ onPress }: { onPress: () => void }) {
       onPressOut={() => { scale.value = withSpring(1.0, SPRING); }}
       onPress={onPress}
       style={pb.outer}
-      accessibilityLabel="New check-in"
+      accessibilityLabel="Yeni check-in"
       accessibilityRole="button"
     >
       {/* Breathing ring */}
@@ -242,15 +242,15 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarAccessibilityLabel: `Home. ${TAB_PRIMARY_JOBS.home}`,
+          title: 'Ana Sayfa',
+          tabBarAccessibilityLabel: `Ana Sayfa. ${TAB_PRIMARY_JOBS.home}`,
         }}
       />
       <Tabs.Screen
         name="discover"
         options={{
-          title: 'Discover',
-          tabBarAccessibilityLabel: `Discover. ${TAB_PRIMARY_JOBS.discover}`,
+          title: 'Keşfet',
+          tabBarAccessibilityLabel: `Keşfet. ${TAB_PRIMARY_JOBS.discover}`,
         }}
       />
       <Tabs.Screen
@@ -263,15 +263,15 @@ export default function TabLayout() {
       <Tabs.Screen
         name="map"
         options={{
-          title: 'Map',
-          tabBarAccessibilityLabel: `Map. ${TAB_PRIMARY_JOBS.map}`,
+          title: 'Harita',
+          tabBarAccessibilityLabel: `Harita. ${TAB_PRIMARY_JOBS.map}`,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
-          tabBarAccessibilityLabel: `Profile. ${TAB_PRIMARY_JOBS.profile}`,
+          title: 'Profil',
+          tabBarAccessibilityLabel: `Profil. ${TAB_PRIMARY_JOBS.profile}`,
         }}
       />
       <Tabs.Screen
