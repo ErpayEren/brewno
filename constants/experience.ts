@@ -1,5 +1,5 @@
 export const PRODUCT_MANIFEST = {
-  vision: 'coffee memory + discovery + social ritual',
+  vision: 'kahve hafızası + keşif + sosyal ritüel',
   tone: 'Confident, warm, precise, and sensory.',
   valuePillars: [
     'Remember every cup with meaningful context.',

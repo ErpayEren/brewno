@@ -382,8 +382,8 @@ function FeedHeader({
       <Animated.View entering={FadeInDown.delay(100).duration(500)} style={hs.statsRow}>
         {[
           { n: profile?.checkins?.length ?? '—', l: 'CHECK·INS' },
-          { n: recommendations?.length ?? '—', l: 'MATCHES' },
-          { n: trending?.length ?? '—', l: 'TRENDING' },
+          { n: recommendations?.length ?? '—', l: 'EŞLEŞME' },
+          { n: trending?.length ?? '—', l: 'TREND' },
         ].map((s, i) => (
           <React.Fragment key={s.l}>
             {i > 0 && <View style={hs.statDiv} />}
@@ -463,12 +463,12 @@ function FeedHeader({
       {/* Quick actions */}
       <Animated.View entering={FadeInDown.delay(150).duration(400)} style={hs.quickRow}>
         <TouchableOpacity onPress={() => router.push('/(tabs)/check-in' as any)} style={hs.quickBtn} accessibilityRole="button" accessibilityLabel="Quick action start check-in">
-          <Text style={hs.quickTitle}>Quick Check-in</Text>
-          <Text style={hs.quickSub}>Capture cup in seconds</Text>
+          <Text style={hs.quickTitle}>Hızlı Check-in</Text>
+          <Text style={hs.quickSub}>Fincanı saniyeler içinde kaydet</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => router.push('/(tabs)/discover' as any)} style={hs.quickBtn} accessibilityRole="button" accessibilityLabel="Quick action discover coffees">
           <Text style={hs.quickTitle}>Keşfet</Text>
-          <Text style={hs.quickSub}>Find your next favorite</Text>
+          <Text style={hs.quickSub}>Bir sonraki favorini keşfet</Text>
         </TouchableOpacity>
       </Animated.View>
 
@@ -636,8 +636,8 @@ export default function FeedScreen() {
               : (
                 <EmptyState
                   emoji="☕"
-                  title="Your first cup is waiting."
-                  subtitle="Find a specialty café nearby and do your first check-in."
+                  title="İlk fincanın seni bekliyor."
+                  subtitle="Yakındaki bir nitelikli kafeyi bul ve ilk check-in’ini yap."
                   ctaLabel="Start check-in →"
                   onCta={() => router.push('/(tabs)/check-in' as any)}
                 />
