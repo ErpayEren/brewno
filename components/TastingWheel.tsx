@@ -10,14 +10,14 @@ const { width: W } = Dimensions.get('window');
 
 // SCA Coffee Taster's Flavor Wheel — simplified 2-tier
 export const WHEEL: Record<string, { color: string; notes: string[] }> = {
-  FLORAL:    { color: '#d4a0c0', notes: ['Jasmine', 'Rose', 'Chamomile', 'Lavender', 'Orange Blossom'] },
-  FRUITY:    { color: Colors.amber, notes: ['Blueberry', 'Peach', 'Stone Fruit', 'Citrus', 'Tropical', 'Strawberry', 'Lemon', 'Lime'] },
-  SWEET:     { color: Colors.copper, notes: ['Caramel', 'Honey', 'Vanilla', 'Brown Sugar', 'Nougat', 'Molasses'] },
-  NUTTY:     { color: '#a07840', notes: ['Hazelnut', 'Almond', 'Cocoa', 'Dark Choc', 'Peanut'] },
-  SPICE:     { color: '#c08040', notes: ['Bergamot', 'Cinnamon', 'Clove', 'Pepper', 'Anise'] },
-  ROASTED:   { color: Colors.fog, notes: ['Tobacco', 'Cedar', 'Smoky', 'Burnt', 'Charred'] },
-  FERMENTED: { color: '#8060a0', notes: ['Winey', 'Whiskey', 'Funky', 'Sour', 'Kombucha'] },
-  EARTHY:    { color: '#607040', notes: ['Mushroom', 'Wet Soil', 'Mossy', 'Herbal'] },
+  FLORAL:    { color: '#d4a0c0', notes: ['Yasemin', 'Gül', 'Papatya', 'Lavanta', 'Portakal Çiçeği'] },
+  FRUITY:    { color: Colors.amber, notes: ['Yaban Mersini', 'Şeftali', 'Taş Meyve', 'Narenciye', 'Tropikal', 'Çilek', 'Limon', 'Misket Limonu'] },
+  SWEET:     { color: Colors.copper, notes: ['Karamel', 'Bal', 'Vanilya', 'Esmer Şeker', 'Nuga', 'Pekmez'] },
+  NUTTY:     { color: '#a07840', notes: ['Fındık', 'Badem', 'Kakao', 'Bitter Çikolata', 'Yer Fıstığı'] },
+  SPICE:     { color: '#c08040', notes: ['Bergamot', 'Tarçın', 'Karanfil', 'Biber', 'Anason'] },
+  ROASTED:   { color: Colors.fog, notes: ['Tütün', 'Sedir', 'İsli', 'Yanık', 'Kömürleşmiş'] },
+  FERMENTED: { color: '#8060a0', notes: ['Şarabımsı', 'Viskimsi', 'Funky', 'Ekşi', 'Kombucha'] },
+  EARTHY:    { color: '#607040', notes: ['Mantar', 'Islak Toprak', 'Yosunsu', 'Bitkisel'] },
 };
 
 const CATEGORIES = Object.keys(WHEEL) as (keyof typeof WHEEL)[];
@@ -181,7 +181,7 @@ export function TastingWheel({ selected, onToggle, maxNotes = 6 }: TastingWheelP
           ))}
         </View>
         <Text style={tw.footerText}>
-          {selected.length}/{maxNotes} notes selected
+          {selected.length}/{maxNotes} not seçildi
         </Text>
       </View>
     </View>

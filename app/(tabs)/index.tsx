@@ -28,10 +28,10 @@ const CARD_HERO_HEIGHT = Math.min(340, H * 0.38);
 
 // ─── Time greeting ────────────────────────────────────────────────────────────
 const PHRASES: Record<string, string[]> = {
-  morning:   ['early bird.', 'first pour.', 'sunrise ritual.', 'morning silence.'],
-  afternoon: ['afternoon pick-me-up.', 'midday cup.', 'golden afternoon.'],
-  evening:   ['golden hour.', 'wind down slowly.', 'last light.'],
-  night:     ['night owl.', 'late pour.', 'moonlit cup.', 'after hours.'],
+  morning:   ['erken kuş.', 'ilk döküm.', 'gün doğumu ritüeli.', 'sabah sessizliği.'],
+  afternoon: ['öğleden sonra canlandırıcısı.', 'öğlen fincanı.', 'altın öğleden sonra.'],
+  evening:   ['altın saat.', 'yavaşça sakinleş.', 'son ışık.'],
+  night:     ['gece kuşu.', 'geç saat dökümü.', 'ay ışığında fincan.', 'mesai sonrası.'],
 };
 function buildGreeting() {
   const h = new Date().getHours();
@@ -40,14 +40,14 @@ function buildGreeting() {
   else if (h >= 12 && h < 17) slot = 'afternoon';
   else if (h >= 17 && h < 21) slot = 'evening';
   const arr = PHRASES[slot];
-  const l1: Record<string, string> = { morning: 'Good morning,', afternoon: 'Good afternoon,', evening: 'Good evening,', night: 'Good evening,' };
+  const l1: Record<string, string> = { morning: 'Günaydın,', afternoon: 'Tünaydın,', evening: 'İyi akşamlar,', night: 'İyi akşamlar,' };
   return { line1: l1[slot], line2: arr[Math.floor(Math.random() * arr.length)] };
 }
 
 // ─── Time ago ─────────────────────────────────────────────────────────────────
 function timeAgo(d: string) {
   const s = Math.floor((Date.now() - new Date(d).getTime()) / 1000);
-  if (s < 60) return 'just now';
+  if (s < 60) return 'az önce';
   if (s < 3600) return `${Math.floor(s / 60)}m`;
   if (s < 86400) return `${Math.floor(s / 3600)}h`;
   return `${Math.floor(s / 86400)}d`;

@@ -20,7 +20,7 @@ import { BRAND_COPY } from '../../constants/content';
 import { ANALYTICS_EVENTS, trackEvent } from '../../constants/analytics';
 
 const STEPS = ['Kahve', 'Kafe', 'Tatlar', 'Puan'];
-const BREW_METHODS = ['Espresso', 'V60', 'Chemex', 'AeroPress', 'French Press', 'Cold Brew'];
+const BREW_METHODS = ['Espresso', 'V60', 'Chemex', 'AeroPress', 'French Press', 'Soğuk Demleme'];
 const MAX_FLAVORS = 6;
 
 type Step = 0 | 1 | 2 | 3;

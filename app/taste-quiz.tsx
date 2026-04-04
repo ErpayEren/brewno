@@ -326,7 +326,7 @@ type ArchetypeKey = typeof ARCHETYPES[number]['key'];
 const ROAST_PREFS = [
   { key: 'light',  label: 'Açık Kavrum',  emoji: '🌤️', accent: Colors.amber,
     boost: { floral: 0.2, fruity: 0.2, sweet: 0.1, roasted: -0.1 } as Partial<Record<FlavorKey, number>> },
-  { key: 'medium', label: 'Medium',        emoji: '⛅',  accent: Colors.copper,
+  { key: 'medium', label: 'Orta',          emoji: '⛅',  accent: Colors.copper,
     boost: { sweet: 0.1 } as Partial<Record<FlavorKey, number>> },
   { key: 'dark',   label: 'Koyu Kavrum',   emoji: '🌑', accent: '#906840',
     boost: { roasted: 0.2, earthy: 0.1, floral: -0.1, fruity: -0.1 } as Partial<Record<FlavorKey, number>> },
@@ -609,10 +609,10 @@ export default function TasteQuizScreen() {
             activeOpacity={0.85}
             style={[styles.btn, { backgroundColor: flavor.accent }, saving && { opacity: 0.6 }]}
             accessibilityRole="button"
-            accessibilityLabel={isLast ? 'Build my taste profile' : 'Next flavour'}
+            accessibilityLabel={isLast ? 'Tat profilimi oluştur' : 'Sonraki lezzet'}
           >
             <Text style={styles.btnText}>
-              {saving ? 'Saving…' : isLast ? 'Build my taste profile' : 'Next'}
+              {saving ? 'Kaydediliyor…' : isLast ? 'Tat profilimi oluştur' : 'Sonraki'}
             </Text>
             {!saving && <Text style={[styles.btnArrow, { color: Colors.ink }]}>→</Text>}
           </TouchableOpacity>
@@ -621,10 +621,10 @@ export default function TasteQuizScreen() {
         <TouchableOpacity
           onPress={handleSkip}
           accessibilityRole="button"
-          accessibilityLabel="Skip taste quiz"
+          accessibilityLabel="Tat quizini geç"
           style={styles.skipBtn}
         >
-          <Text style={styles.skipText}>SKIP QUIZ</Text>
+          <Text style={styles.skipText}>QUIZİ GEÇ</Text>
         </TouchableOpacity>
       </View>
     </View>

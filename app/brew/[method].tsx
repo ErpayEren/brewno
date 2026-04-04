@@ -15,7 +15,7 @@ const { width: W } = Dimensions.get('window');
 
 const METHOD_ICONS: Record<string, string> = {
   'V60': '▽', 'Espresso': '⊙', 'Chemex': '⌖',
-  'AeroPress': '⊕', 'French Press': '⊞', 'Cold Brew': '❄',
+  'AeroPress': '⊕', 'French Pres': '⊞', 'Soğuk Demleme': '❄',
 };
 
 export default function BrewGuideScreen() {
